@@ -14,19 +14,33 @@ body {
   color: var(--mndot-gray-900);
 }
 
-header {
+.site-header {
+  display: flex;
+  align-items: center;            /* Vertically center title with logo */
+  gap: 1.5rem;
   background: var(--mndot-blue);
   color: white;
   padding: 1.25rem 2rem;
 }
 
-header h1 {
+.header-logo {
+  height: 4rem;
+  flex-shrink: 0;
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.header-text h1 {
   margin: 0;
   font-size: 1.5rem;
 }
 
-header p {
-  margin-top: 0.5rem;
+.header-text p {
+  margin: 0.35rem 0 0;
   font-size: 0.95rem;
   opacity: 0.9;
 }
