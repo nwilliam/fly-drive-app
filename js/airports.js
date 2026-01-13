@@ -1,5 +1,7 @@
+// noinspection SpellCheckingInspection
+
 const AIRPORTS = [
-  { name:"Bemidji Regional Airport", icao:"KBJI", iata:"BJI", faa:"BJI", lat:47.5094, lon:-94.9337, flyingFromKSTP:241, drivingFromKSTP:270 },
+  { name:"Bemidji Regional Airport", icao:"KBJI", iata:"BJI", faa:"BJI", lat:47.5094, lon:-94.9337, flyingFromKSTP:199, drivingFromKSTP:230 },
   { name:"Brainerd Lakes Regional Airport", icao:"KBRD", iata:"BRD", faa:"BRD", lat:46.3984, lon:-94.1351, flyingFromKSTP:147, drivingFromKSTP:165 },
   { name:"Duluth International Airport", icao:"KDLH", iata:"DLH", faa:"DLH", lat:46.8421, lon:-92.1936, flyingFromKSTP:158, drivingFromKSTP:184 },
   { name:"Rochester International Airport", icao:"KRST", iata:"RST", faa:"RST", lat:43.9088, lon:-92.4983, flyingFromKSTP:128, drivingFromKSTP:155 },
