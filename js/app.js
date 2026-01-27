@@ -38,7 +38,6 @@ function filterAirports(query) {
   return AIRPORTS.filter(a =>
     (a.name && a.name.toLowerCase().includes(query)) ||
     (a.icao && a.icao.toLowerCase().includes(query)) ||
-    (a.iata && a.iata.toLowerCase().includes(query)) ||
     (a.faa && a.faa.toLowerCase().includes(query))
   ).slice(0, 15);
 }
@@ -48,7 +47,7 @@ function renderAirportList(listEl, airports) {
   airports.forEach(ap => {
     const div = document.createElement("div");
     div.className = "autocomplete-item";
-    div.textContent = `${ap.name} (${ap.faa}${ap.iata ? " / " + ap.iata : ""}${ap.icao ? " / " + ap.icao : ""})`;
+    div.textContent = `${ap.name} (${ap.faa}${ap.icao ? " / " + ap.icao : ""})`;
     div.addEventListener("click", () => {
       selectedAirport1 = ap;
       destInput.value = div.textContent;
