@@ -187,39 +187,19 @@
       <div class="faq-question">What assumptions were used to determine travel costs?</div>
       <div class="faq-answer">
         <ul>
-          <li>Average employee cost is based on role and includes benefits.</li>
-          <li>Lodging costs: $120.00/night per person</li>
-          <li>Meals: $11.00 breakfast, $13.00 lunch, $19.00 dinner</li>
-          <li>4 people maximum per vehicle</li>
-          <li>$0.725/mile vehicle cost</li>
-          <li>TODO: FILL ME OUT /mile airplane cost</li>
-          <li>Overnight flying trip add $326 for lodging and meals for two pilots</li>
+          <li>Average employee cost is based on their role and includes benefits.</li>
+          <li>Lodging costs: <span id="faq-lodging-per-person"></span>/night per person</li>
+          <li>Meals: <span id="faq-meals-breakfast"></span> breakfast, <span id="faq-meals-lunch"></span> lunch,
+            <span id="faq-meals-dinner"></span> dinner
+          </li>
+          <li><span id="faq-vehicle-capacity"></span> people maximum per vehicle</li>
+          <li><span id="faq-cost-per-mile-driving"></span>/mile vehicle cost</li>
+          <li><span id="faq-cost-per-mile-flying-kingair"></span>/mile King Air airplane cost</li>
+          <li><span id="faq-cost-per-mile-flying-kodiak"></span>/mile Kodiak airplane cost</li>
+          <li>Overnight flying trip add <span id="faq-pilot-lodging"></span> for lodging and meals for two pilots</li>
         </ul>
       </div>
     </div>
-
-   <!-- <div class="faq-item">
-      <div class="faq-question">How are salary costs calculated?</div>
-      <div class="faq-answer">
-        <ul>
-          <li>A study by MnDOT determined hourly value that an employee contributes to an organization. These values are:
-          <ul>
-            <li>5.7 for Office Directors and Principle Engineers</li>
-            <li>3.8 for Managers, Supervisors, and other Professionals</li>
-            <li>2.4 for Transportation Generalists and other workers</li>
-          </ul>
-          <li>These values are multiplied by an average hourly employee compensation, including benefits, to determine the
-          value an employee contributes to the organization. This hourly value is multiplied by the number of hours of
-          travel by car to determine cost to the organization. These values are not applied to the cost of flying because
-          the aircraft is viewed as a secure office environment where work can be achieved. Travel via car does not offer an
-          environment conducive to productive work.
-          </li>
-          <li>Sources used for salaries, benefits, and justifications are the State’s bargaining units and Human Resources,
-            and the National Business Aviation Association (NBAA).
-          </li>
-        </ul>
-      </div>
-    </div>-->
 
   </section>
 </main>
@@ -229,4 +209,21 @@
 <script src="js/constants.js"></script>
 <script src="js/airports.js"></script>
 <script src="js/app.js"></script>
+
+<script>
+  // FAQ: fill placeholders from constants.js
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+  setText("faq-meals-breakfast", `$${MEALS_COST.breakfast}`);
+  setText("faq-meals-lunch", `$${MEALS_COST.lunch}`);
+  setText("faq-meals-dinner", `$${MEALS_COST.dinner}`);
+  setText("faq-lodging-per-person", `$${ACCOMMODATIONS_PER_PERSON.toLocaleString()}`);
+  setText("faq-vehicle-capacity", `${VEHICLE_CAPACITY}`);
+  setText("faq-cost-per-mile-driving", `$${COST_PER_MILE.driving}`);
+  setText("faq-cost-per-mile-flying-kingair", `$${COST_PER_MILE.flyingKingAir}`);
+  setText("faq-cost-per-mile-flying-kodiak", `$${COST_PER_MILE.flyingKodiak}`);
+  setText("faq-pilot-lodging", `$${PILOT_LODGING.toLocaleString()}`);
+</script>
 </html>

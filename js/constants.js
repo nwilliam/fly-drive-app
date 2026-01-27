@@ -8,7 +8,7 @@ const ROLES = {
   },
   managers: {
     shortLabel: "Professionals",
-    fullLabel: "Managers / Supervisors / Professionals",
+    fullLabel: "Supervisors / Professionals",
     hourlyRate: 67.46,
     prcFactor: 3.8,
     baseAvgYearly: "80,000"
@@ -33,8 +33,14 @@ const FLYING_SPEED_MPH = {
   kodiak: 180
 };
 
+const LODGING_COST = 120;
+const MEALS_COST = {
+  breakfast: 11,
+  lunch: 13,
+  dinner: 19
+};
 const VEHICLE_CAPACITY = 4;
-const LODGING_PER_PERSON = 163; //includes meals? No way to figure out TOD so lets say hotel = 120 + (11 + 13 + 19) = 163
+const ACCOMMODATIONS_PER_PERSON = LODGING_COST + MEALS_COST.breakfast + MEALS_COST.lunch + MEALS_COST.dinner;
 const PILOT_LODGING = 272; // Why are we doing this separately? Maybe we should just use the same rate as generalists?
 const DRIVING_SPEED_MPH = 60;
 const HOURS_ALLOWED_PER_DAY = 10;

@@ -1,5 +1,3 @@
-let selectedAirport1 = null;
-
 const destInput = document.getElementById("dest1");
 const destList = document.getElementById("dest1-list");
 
@@ -23,6 +21,17 @@ function clearResults() {
   document.getElementById("breakdownTable").innerHTML =
     `<tr><td colspan="3">Enter inputs to view calculation details.</td></tr>`;
 }
+
+function tooltip(text, iconPath = "assets/icons/question-mark.svg") {
+  return `
+    <span class="tooltip-icon">
+      <img alt="tooltip" src="${iconPath}" />
+      <span class="tooltip-text">${text}</span>
+    </span>
+  `;
+}
+
+let selectedAirport1 = null;
 
 function filterAirports(query) {
   query = query.toLowerCase();
@@ -51,15 +60,6 @@ function renderAirportList(listEl, airports) {
   listEl.hidden = airports.length === 0;
 }
 
-function tooltip(text, iconPath = "assets/icons/question-mark.svg") {
-  return `
-    <span class="tooltip-icon">
-      <img alt="tooltip" src="${iconPath}" />
-      <span class="tooltip-text">${text}</span>
-    </span>
-  `;
-}
-
 let debounceTimer = null;
 destInput.addEventListener("input", () => {
   selectedAirport1 = null;
@@ -74,12 +74,10 @@ destInput.addEventListener("input", () => {
   }, 200);
 });
 
-
 document.addEventListener("click", e => {
   if (!e.target.closest(".autocomplete-container")) destList.hidden = true;
 });
 
-//Here we catch all user inputs and more importantly, debounce them.
 const inputs = [
   "directors",
   "managers",
@@ -133,7 +131,7 @@ function calculateAndRender() {
   const numDays =
     Math.floor((driveHours + hoursAtDest) / HOURS_ALLOWED_PER_DAY);
   const driveLodging =
-    totalEmployees * LODGING_PER_PERSON * numDays;
+    totalEmployees * ACCOMMODATIONS_PER_PERSON * numDays;
   const driveEmployeeTotal =
     totalEmployeeCostPerHour * driveHours;
   const driveTotal =
@@ -147,7 +145,7 @@ function calculateAndRender() {
   const flyNumDaysKingAir =
     Math.floor((flyHoursKingAir + hoursAtDest) / HOURS_ALLOWED_PER_DAY_FLYING);
   const flyLodgingKingAir =
-    (totalEmployees + 2) * (LODGING_PER_PERSON) * flyNumDaysKingAir; //technically we could just send the plane home. if(hoursAtDest > X) flyDistanceCostKingAir*=2
+    (totalEmployees + 2) * (ACCOMMODATIONS_PER_PERSON) * flyNumDaysKingAir; //technically we could just send the plane home. if(hoursAtDest > X) flyDistanceCostKingAir*=2
   const flyTotalKingAir =
     flyDistanceCostKingAir + flyLodgingKingAir;
 
@@ -159,17 +157,17 @@ function calculateAndRender() {
   const flyNumDaysKodiak =
     Math.floor((flyHoursKodiak + hoursAtDest) / HOURS_ALLOWED_PER_DAY_FLYING);
   const flyLodgingKodiak =
-    (totalEmployees + 2) * (LODGING_PER_PERSON) * flyNumDaysKodiak; //technically we could just send the plane home. if(hoursAtDest > X) flyDistanceCostKingAir*=2
+    (totalEmployees + 2) * (ACCOMMODATIONS_PER_PERSON) * flyNumDaysKodiak; //technically we could just send the plane home. if(hoursAtDest > X) flyDistanceCostKingAir*=2
   const flyTotalKodiak =
     flyDistanceCostKodiak + flyLodgingKodiak;
 
   // Update Totals
   document.getElementById("drive-total").textContent = "$" + driveTotal.toLocaleString(undefined, {maximumFractionDigits: 0})
-    + " - " + driveHours.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs.";
+    + " - " + driveHours.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs";
   document.getElementById("fly-total").textContent = "$" + flyTotalKingAir.toLocaleString(undefined, {maximumFractionDigits: 0})
-    + " - " + flyHoursKingAir.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs.";
+    + " - " + flyHoursKingAir.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs";
   document.getElementById("fly-total-kodiak").textContent = "$" + flyTotalKodiak.toLocaleString(undefined, {maximumFractionDigits: 0})
-    + " - " + flyHoursKodiak.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs.";
+    + " - " + flyHoursKodiak.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs";
 
   // --- Breakdown Table ---
     const breakdownTable = document.getElementById("breakdownTable");
@@ -231,8 +229,8 @@ function calculateAndRender() {
   </tr>
   <tr>
     <td>Lodging & Meals
-        ${tooltip(`If the total hours is greater than a standard workday of ${HOURS_ALLOWED_PER_DAY} hours, employees are assumed to be reimbursed for an overnight stay including lodging and meals.\n\nThis cost is $${LODGING_PER_PERSON} per person and is based on $120 lodging cost please three meals reimbursed at $11, $13, and $19.`)}</td>
-    <td>$${LODGING_PER_PERSON} per person lodging and meals x ${totalEmployees} total employees</td>
+        ${tooltip(`If the total hours is greater than a standard workday of ${HOURS_ALLOWED_PER_DAY} hours, employees are assumed to be reimbursed for an overnight stay including lodging and meals.\n\nThis cost is $${ACCOMMODATIONS_PER_PERSON} per person and is based on $120 lodging cost please three meals reimbursed at $11, $13, and $19.`)}</td>
+    <td>$${ACCOMMODATIONS_PER_PERSON} per person lodging and meals x ${totalEmployees} total employees</td>
     <td>$${driveLodging.toLocaleString()}</td>
   </tr>
   <tr class="total-row">
@@ -257,8 +255,8 @@ function calculateAndRender() {
   </tr>
   <tr>
     <td>Lodging & Meals
-       ${tooltip(`If the total hours is greater than ${HOURS_ALLOWED_PER_DAY_FLYING} hours, employees are reimbursed for an overnight stay including lodging and meals, and the two pilots' worth of lodging and meals is added to the cost.\n\nThis cost is $${LODGING_PER_PERSON} per person and is based on $120 lodging cost plus three meals reimbursed at $11, $13, and $19.\n\n12 hours is used for calculating flying as employees are not required to be active during the return trip.`)}
-    <td>$${LODGING_PER_PERSON} per person lodging and meals x ${totalEmployees + 2} total employees (including pilots)</td>
+       ${tooltip(`If the total hours is greater than ${HOURS_ALLOWED_PER_DAY_FLYING} hours, employees are reimbursed for an overnight stay including lodging and meals, and the two pilots' worth of lodging and meals is added to the cost.\n\nThis cost is $${ACCOMMODATIONS_PER_PERSON} per person and is based on $120 lodging cost plus three meals reimbursed at $11, $13, and $19.\n\n12 hours is used for calculating flying as employees are not required to be active during the return trip.`)}
+    <td>$${ACCOMMODATIONS_PER_PERSON} per person lodging and meals x ${totalEmployees + 2} total employees (including pilots)</td>
     <td>$${flyLodgingKingAir.toLocaleString()}</td>
   </tr>
   <tr class="total-row">
@@ -283,8 +281,8 @@ function calculateAndRender() {
   </tr>
   <tr>
     <td>Lodging & Meals
-    ${tooltip(`If the total hours is greater than ${HOURS_ALLOWED_PER_DAY_FLYING} hours, employees are reimbursed for an overnight stay including lodging and meals, and the two pilots' worth of lodging and meals is added to the cost.\n\nThis cost is $${LODGING_PER_PERSON} per person and is based on $120 lodging cost plus three meals reimbursed at $11, $13, and $19.\n\n12 hours is used for calculating flying as employees are not required to be active during the return trip.`)}</td>
-    <td>$${LODGING_PER_PERSON} per person lodging and meals x ${totalEmployees + 2} total employees (including pilots)</td>
+    ${tooltip(`If the total hours is greater than ${HOURS_ALLOWED_PER_DAY_FLYING} hours, employees are reimbursed for an overnight stay including lodging and meals, and the two pilots' worth of lodging and meals is added to the cost.\n\nThis cost is $${ACCOMMODATIONS_PER_PERSON} per person and is based on $120 lodging cost plus three meals reimbursed at $11, $13, and $19.\n\n12 hours is used for calculating flying as employees are not required to be active during the return trip.`)}</td>
+    <td>$${ACCOMMODATIONS_PER_PERSON} per person lodging and meals x ${totalEmployees + 2} total employees (including pilots)</td>
     <td>$${flyLodgingKodiak.toLocaleString()}</td>
   </tr>
   <tr class="total-row">
