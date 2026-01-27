@@ -1,18 +1,18 @@
 const ROLES = {
   directors: {
-    label: "Directors",
+    shortLabel: "Directors",
     fullLabel: "Office Directors/Principle Engineers",
     hourlyRate: 86.53,
     prcFactor: 5.7
   },
   managers: {
-    label: "Managers",
+    shortLabel: "Managers",
     fullLabel: "Managers/Supervisors/Professionals",
     hourlyRate: 67.46,
     prcFactor: 3.8
   },
   generalists: {
-    label: "Generalists",
+    shortLabel: "Generalists",
     fullLabel: "Generalists/Transportation Worker",
     hourlyRate: 51.40,
     prcFactor: 2.4
@@ -31,7 +31,7 @@ const FLYING_SPEED_MPH = {
 };
 
 const VEHICLE_CAPACITY = 4;
-const LODGING_PER_PERSON = 150; //includes meals? No way to figure out TOD so lets say hotel = 120 + (11 + 13 + 19)/3 = 11 so 22-ish? So 142? Maybe 150?
+const LODGING_PER_PERSON = 163; //includes meals? No way to figure out TOD so lets say hotel = 120 + (11 + 13 + 19) = 163
 const PILOT_LODGING = 272; // Why are we doing this separately? Maybe we should just use the same rate as generalists?
 const DRIVING_SPEED_MPH = 60;
 const HOURS_ALLOWED_PER_DAY = 10;
