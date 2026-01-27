@@ -1,28 +1,31 @@
 const ROLES = {
   directors: {
     shortLabel: "Directors",
-    fullLabel: "Office Directors/Principle Engineers",
+    fullLabel: "Office Directors / Principle Engineers",
     hourlyRate: 86.53,
-    prcFactor: 5.7
+    prcFactor: 5.7,
+    baseAvgYearly: "120,000"
   },
   managers: {
-    shortLabel: "Managers",
-    fullLabel: "Managers/Supervisors/Professionals",
+    shortLabel: "Professionals",
+    fullLabel: "Managers / Supervisors / Professionals",
     hourlyRate: 67.46,
-    prcFactor: 3.8
+    prcFactor: 3.8,
+    baseAvgYearly: "80,000"
   },
   generalists: {
     shortLabel: "Generalists",
-    fullLabel: "Generalists/Transportation Worker",
+    fullLabel: "Transportation Generalists",
     hourlyRate: 51.40,
-    prcFactor: 2.4
+    prcFactor: 2.4,
+    baseAvgYearly: "40,000"
   }
 }
 
 const COST_PER_MILE = {
-  driving: 0.75,
-  flyingKingAir: 9.75,
-  flyingKodiak: 4.9 //completely made up
+  driving: 0.725,
+  flyingKingAir: 15.52,
+  flyingKodiak: 7.76 //completely made up
 };
 
 const FLYING_SPEED_MPH = {

@@ -20,7 +20,6 @@
     <h1>Fly or Drive Cost Comparison Tool</h1>
     <p>
       Compare total employee, travel, and lodging costs for driving versus flying.
-      All calculations assume a <strong>round trip</strong>.
     </p>
   </div>
 </header>
@@ -50,27 +49,18 @@
 
     <div class="form-grid" style="margin-top:1rem;">
       <div>
-        <label for="directors">Office Directors / District Engineers</label>
-        <span class="tooltip-icon">
-            <img alt="tooltip" src="assets/icons/question-mark.svg"/>
-            <span class="tooltip-text">Studies by PRC Aviation and MnDOT determined hourly values that an employee is worth to an organization. This value is equal to the average salary plus benefits multiplied by the PRC Factor. PRC Factor: 5.7 for Office Directors/District Engineers</span>
-        </span>
+        <label id="directors-label" for="directors">Office Directors/Professional Engineers</label>
+        <span id="directors-tooltip"></span>
         <input id="directors" min="0" type="number" value="0">
       </div>
       <div>
-        <label for="managers">Managers / Supervisors / Professionals</label>
-        <span class="tooltip-icon">
-          <img alt="tooltip" src="assets/icons/question-mark.svg"/>
-          <span class="tooltip-text">Studies by PRC Aviation and MnDOT determined hourly values that an employee is worth to an organization. This value is equal to the average salary plus benefits multiplied by the PRC Factor. PRC Factor: 3.8 for Managers/Supervisors/Professionals</span>
-        </span>
+        <label id="managers-label" for="managers">Managers / Supervisors / Professionals</label>
+        <span id="managers-tooltip"></span>
         <input id="managers" min="0" type="number" value="0">
       </div>
       <div>
-        <label for="generalists">Transportation Generalists</label>
-        <span class="tooltip-icon">
-          <img alt="tooltip" src="assets/icons/question-mark.svg"/>
-          <span class="tooltip-text">Studies by PRC Aviation and MnDOT determined hourly values that an employee is worth to an organization. This value is equal to the average salary plus benefits multiplied by the PRC Factor. PRC Factor: 2.4 for Transportation Generalists</span>
-        </span>
+        <label id="generalists-label" for="generalists">Transportation Generalists</label>
+        <span id="generalists-tooltip"></span>
         <input id="generalists" min="0" type="number" value="0">
       </div>
     </div>
@@ -103,16 +93,16 @@
   <section>
     <h2>Calculation Breakdown</h2>
     <table>
-      <thead>
+      <!--<thead>
       <tr>
         <th>Item</th>
         <th>Formula</th>
         <th>Value</th>
       </tr>
-      </thead>
+      </thead>-->
       <tbody id="breakdownTable">
       <tr>
-        <td colspan="3">Enter inputs to view calculation details.</td>
+        <td colspan="3">Enter Trip Information to view calculation details.</td>
       </tr>
       </tbody>
     </table>
@@ -124,40 +114,11 @@
     <div class="faq-item">
       <div class="faq-question">What types of airplanes are flown by Aeronautics?</div>
       <div class="faq-answer">
-        <p>Aeronautics flies passengers in three twin-engine turboprop airplanes:</p>
+        <p>MnDOT Aeronautics flies passengers in three turboprop aircraft:</p>
         <ul>
           <li>Beechcraft King Air C90</li>
           <li>Beechcraft King Air B200</li>
           <li>Daher Kodiak 100</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-question">How are trip miles determined?</div>
-      <div class="faq-answer">
-        <ul>
-          <li>Air miles are calculated from latitude and longitude values for locations of departure and arrival airports.</li>
-          <li>Road miles are calculated from distances given by the MapQuest API</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-question">How are salary costs calculated?</div>
-      <div class="faq-answer">
-        <ul>
-          <li>Studies by PRC Aviation and MnDOT determined hourly values that an employee is worth to an organization. Those
-            values are 5.7 for Office Directors/District Engineers, 3.8 for Managers/Supervisors/Professionals, and 2.4 for
-            Transportation Workers. These values are multiplied by an average hourly employee cost (currently $107,386/year
-            or $51.43/hour including benefits, etc.) to determine the hourly value a person has. This hourly value is
-            multiplied by the number of hours of travel by car to determine cost to the organization. These values are not
-            applied to the cost of flying because the aircraft is viewed as a secure office environment where work can be
-            achieved. Automobiles do not offer an environment conducive to productive work.
-          </li>
-          <li>Sources used for salaries, benefits, and justifications are the State’s bargaining units and Human Resources,
-            and the National Business Aviation Association (NBAA).
-          </li>
         </ul>
       </div>
     </div>
@@ -170,9 +131,16 @@
     </div>
 
     <div class="faq-item">
+      <div class="faq-question">Who pays for use of the aircraft?</div>
+      <div class="faq-answer">
+        <p>A single appropriation from the General Fund pays for all air travel within MnDOT. Outside agencies will be billed as per MnDOT's standard policies.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
       <div class="faq-question">How do I schedule a flight?</div>
       <div class="faq-answer">
-        <p>Call 651-234-7222.</p>
+        <p>Call 651-234-7222</p>
       </div>
     </div>
 
@@ -180,9 +148,9 @@
       <div class="faq-question">Where do the planes fly?</div>
       <div class="faq-answer">
         <ul>
-          <li>Nearly 100 airports in Minnesota</li>
-          <li>Around 3,500 airports in the U.S.</li>
-          <li>Canada.</li>
+          <li>Any public-use airport within the State of Minnesota</li>
+          <li>Many airports in surrounding states and across the United States</li>
+          <li>Canada</li>
         </ul>
       </div>
     </div>
@@ -191,17 +159,26 @@
       <div class="faq-question">What are the advantages of using MnDOT aircraft?</div>
       <div class="faq-answer">
         <ul>
-          <li>Office on the move. Conduct business while traveling. Maximize time management</li>
-          <li>Group productivity because of seating arrangement</li>
-          <li>Privacy</li>
-          <li>Security</li>
+          <li>An office of the move, with business able to be conducted while traveling, maximizing time management</li>
+          <li>Group productivity with executive, club style seating arrangement</li>
+          <li>Privacy and security</li>
           <li>Interruptions and distractions eliminated</li>
           <li>Unexpected meetings can be accommodated</li>
           <li>Flexible departure and arrival schedule</li>
-          <li>No wasted time waiting in line for a commercial flight.</li>
-          <li>Less travel time, therefore, savings of expenses for lodging and meals</li>
-          <li>Post-trip fatigue eliminated.</li>
+          <li>No wasted time waiting in line for a commercial flight</li>
+          <li>Less travel time means saving on lodging and meals</li>
+          <li>Elimination of post-travel fatigue</li>
           <li>Safest form of transportation available</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">How are trip miles determined?</div>
+      <div class="faq-answer">
+        <ul>
+          <li>Air miles are calculated from latitude and longitude values for locations of departure and arrival airports.</li>
+          <li>Road miles are calculated from distances given by the via MapQuest</li>
         </ul>
       </div>
     </div>
@@ -210,21 +187,46 @@
       <div class="faq-question">What assumptions were used to determine travel costs?</div>
       <div class="faq-answer">
         <ul>
-          <li>Average employee cost: $107,386 / year, including benefits, etc.</li>
+          <li>Average employee cost is based on role and includes benefits.</li>
           <li>Lodging costs: $120.00/night per person</li>
-          <li>Meals: $9.00 breakfast, $11.00 lunch, $16.00 dinner</li>
+          <li>Meals: $11.00 breakfast, $13.00 lunch, $19.00 dinner</li>
           <li>4 people maximum per vehicle</li>
-          <li>$0.58/mile vehicle cost</li>
-          <li>$9.75/mile airplane cost</li>
-          <li>Overnight flying trip add $272.00 per night ($120.00 lodging and $16.00 meal for two pilots)</li>
+          <li>$0.725/mile vehicle cost</li>
+          <li>TODO: FILL ME OUT /mile airplane cost</li>
+          <li>Overnight flying trip add $326 for lodging and meals for two pilots</li>
         </ul>
       </div>
     </div>
+
+   <!-- <div class="faq-item">
+      <div class="faq-question">How are salary costs calculated?</div>
+      <div class="faq-answer">
+        <ul>
+          <li>A study by MnDOT determined hourly value that an employee contributes to an organization. These values are:
+          <ul>
+            <li>5.7 for Office Directors and Principle Engineers</li>
+            <li>3.8 for Managers, Supervisors, and other Professionals</li>
+            <li>2.4 for Transportation Generalists and other workers</li>
+          </ul>
+          <li>These values are multiplied by an average hourly employee compensation, including benefits, to determine the
+          value an employee contributes to the organization. This hourly value is multiplied by the number of hours of
+          travel by car to determine cost to the organization. These values are not applied to the cost of flying because
+          the aircraft is viewed as a secure office environment where work can be achieved. Travel via car does not offer an
+          environment conducive to productive work.
+          </li>
+          <li>Sources used for salaries, benefits, and justifications are the State’s bargaining units and Human Resources,
+            and the National Business Aviation Association (NBAA).
+          </li>
+        </ul>
+      </div>
+    </div>-->
+
   </section>
 </main>
+
+</body>
 
 <script src="js/constants.js"></script>
 <script src="js/airports.js"></script>
 <script src="js/app.js"></script>
-</body>
 </html>

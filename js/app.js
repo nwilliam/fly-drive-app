@@ -3,6 +3,20 @@ let selectedAirport1 = null;
 const destInput = document.getElementById("dest1");
 const destList = document.getElementById("dest1-list");
 
+//Replace static elements
+document.getElementById("directors-label").textContent = `${ROLES.directors.fullLabel}`;
+document.getElementById("managers-label").textContent = `${ROLES.managers.fullLabel}`;
+document.getElementById("generalists-label").textContent = `${ROLES.generalists.fullLabel}`;
+document.getElementById("directors-tooltip").innerHTML = `${tooltip(`Each level of employee has a different
+ level of value that they bring to MnDOT, which requires them to be separated for calculation purposes. For calculation
+ purposes only, ${ROLES.directors.shortLabel} have a rough yearly income greater than $${ROLES.directors.baseAvgYearly}.`)}`
+document.getElementById("managers-tooltip").innerHTML = `${tooltip(`Each level of employee has a different
+ level of value that they bring to MnDOT, which requires them to be separated for calculation purposes. For calculation
+ purposes only, ${ROLES.managers.shortLabel} have a rough yearly income of between $${ROLES.managers.baseAvgYearly} and $${ROLES.directors.baseAvgYearly}.`)}`
+document.getElementById("generalists-tooltip").innerHTML = `${tooltip(`Each level of employee has a different
+ level of value that they bring to MnDOT, which requires them to be separated for calculation purposes. For calculation
+ purposes only, ${ROLES.generalists.shortLabel} have a rough yearly income of less than $${ROLES.managers.baseAvgYearly}.`)}`
+
 function clearResults() {
   document.getElementById("drive-total").textContent = "$—";
   document.getElementById("fly-total").textContent = "$—";
@@ -150,91 +164,75 @@ function calculateAndRender() {
     flyDistanceCostKodiak + flyLodgingKodiak;
 
   // Update Totals
-  document.getElementById("drive-total").textContent = "$" + driveTotal.toLocaleString(undefined, {maximumFractionDigits: 0});
-  document.getElementById("fly-total").textContent = "$" + flyTotalKingAir.toLocaleString(undefined, {maximumFractionDigits: 0});
-  document.getElementById("fly-total-kodiak").textContent = "$" + flyTotalKodiak.toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById("drive-total").textContent = "$" + driveTotal.toLocaleString(undefined, {maximumFractionDigits: 0})
+    + " - " + driveHours.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs.";
+  document.getElementById("fly-total").textContent = "$" + flyTotalKingAir.toLocaleString(undefined, {maximumFractionDigits: 0})
+    + " - " + flyHoursKingAir.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs.";
+  document.getElementById("fly-total-kodiak").textContent = "$" + flyTotalKodiak.toLocaleString(undefined, {maximumFractionDigits: 0})
+    + " - " + flyHoursKodiak.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs.";
 
   // --- Breakdown Table ---
     const breakdownTable = document.getElementById("breakdownTable");
     breakdownTable.innerHTML = `
-  <tr><th colspan="3" style="text-align:center">Employee Costs (Travel Hours Only, Driving)</th></tr>
+  <tr><th colspan="3" style="text-align:center">Employee Costs per Hour</th></tr>
   <tr>
     <td>${ROLES.directors.shortLabel}
-        ${tooltip(`Average Director/P.E. cost per hour is $${ROLES.directors.hourlyRate.toFixed(2)},
-        includes the cost of benefits. MnDOT and PRC Aviation have determined that the value these individuals create " +
-        is worth a factor of $${ROLES.directors.prcFactor} times their salary. Thus, we multiply hourly cost times the
-        PRC factor to calculate the cost per hour of having this individual driving a vehicle rather than working.
-        ("Windshield Time")`)}
-    <td>${ROLES.directors.hourlyRate.toFixed(2)}/hr cost x ${ROLES.directors.prcFactor} PRC Factor x ${numDirectors} ${ROLES.directors.shortLabel.toLowerCase()} traveling</td>
+        ${tooltip(`Average ${ROLES.directors.shortLabel} compensation per hour is $${ROLES.directors.hourlyRate.toFixed(2)}, including the cost of benefits.\n\nA MnDOT study has determined that the value these individuals create is worth a Value Factor of ${ROLES.directors.prcFactor} times their compensation.\n\nTo calculate the hourly cost of having this individual driving a vehicle and not working ("windshield time"), we multiply this Value Factor times the average hourly compensation.`)}
+    </td>
+    <td>${ROLES.directors.hourlyRate.toFixed(2)}/hr cost x ${ROLES.directors.prcFactor} Value Factor x ${numDirectors} ${ROLES.directors.shortLabel.toLowerCase()} traveling</td>
     <td>$${costDirectors.toLocaleString(undefined, {maximumFractionDigits: 2})}/hr</td>
   </tr>
   <tr>
     <td>${ROLES.managers.shortLabel}
-      ${tooltip(`Average Manager/Supervisor/Professional cost per hour is
-      $${ROLES.managers.hourlyRate.toFixed(2)}, includes the cost of benefits. MnDOT and PRC Aviation have
-      determined that the value these individuals create is worth a factor of ${ROLES.managers.prcFactor} their salary.
-      Thus, we multiply hourly cost times the PRC factor to calculate the cost per hour of having this individual
-      driving a vehicle rather than working. ("Windshield Time")`)}
+      ${tooltip(`Average ${ROLES.managers.shortLabel} compensation per hour is $${ROLES.managers.hourlyRate.toFixed(2)}, including the cost of benefits.\n\nA MnDOT study has determined that the value these individuals create is worth a Value Factor of ${ROLES.managers.prcFactor} times their compensation.\n\nTo calculate the hourly cost of having this individual driving a vehicle and not working ("windshield time"), we multiply this Value Factor times the average hourly compensation.`)}
     </td>
-    <td>${ROLES.managers.hourlyRate.toFixed(2)}/hr cost x ${ROLES.managers.prcFactor} PRC Factor x ${numManagers} ${ROLES.managers.shortLabel.toLowerCase()} traveling</td>
+    <td>${ROLES.managers.hourlyRate.toFixed(2)}/hr cost x ${ROLES.managers.prcFactor} Value Factor x ${numManagers} ${ROLES.managers.shortLabel.toLowerCase()} traveling</td>
     <td>$${costManagers.toLocaleString(undefined, {maximumFractionDigits: 2})}/hr</td>
   </tr>
   <tr>
     <td>${ROLES.generalists.shortLabel}
-      ${tooltip(`Average Generalist cost per hour is $${ROLES.generalists.hourlyRate.toFixed(2)},
-       includes the cost of benefits. MnDOT and PRC Aviation have determined that the value these individuals create
-       is worth a factor of ${ROLES.generalists.prcFactor} their salary. Thus, we multiply hourly cost times the PRC
-       factor to calculate the cost per hour of having this individual driving a vehicle rather than working.
-       ("Windshield Time")`)}
+      ${tooltip(`Average ${ROLES.generalists.shortLabel} compensation per hour is $${ROLES.generalists.hourlyRate.toFixed(2)}, including the cost of benefits.\n\nA MnDOT study has determined that the value these individuals create is worth a Value Factor of ${ROLES.generalists.prcFactor} times their compensation.\n\nTo calculate the hourly cost of having this individual driving a vehicle and not working ("windshield time"), we multiply this Value Factor times the average hourly compensation.`)}</td>
     </td>
-    <td>${ROLES.generalists.hourlyRate.toFixed(2)}/hr cost x ${ROLES.generalists.prcFactor} PRC Factor x ${numGeneralists} ${ROLES.generalists.shortLabel.toLowerCase()} traveling</td>
+    <td>${ROLES.generalists.hourlyRate.toFixed(2)}/hr cost x ${ROLES.generalists.prcFactor} Value Factor x ${numGeneralists} ${ROLES.generalists.shortLabel.toLowerCase()} traveling</td>
     <td>$${costGeneralists.toLocaleString(undefined, {maximumFractionDigits: 2})}/hr</td>
   </tr>
   <tr class="total-row">
     <td><b>Employee Total</b>
-        <!--${tooltip(`Total cost of all employees traveling, per hour.`)}--></td><td></td>
+        <!-- ${tooltip(`Total cost of all employees traveling, per hour.`)}--></td><td></td>
     <td><b>$${totalEmployeeCostPerHour.toLocaleString(undefined, {maximumFractionDigits: 2})}/hr</b></td>
   </tr>
 
   <tr><th colspan="3" style="text-align:center">Driving Costs</th></tr>
   <tr>
     <td>Travel Hours
-        ${tooltip(`Average travel time from KSTP to ${selectedAirport1.name} airport, in hours. Mileage is derived using
-        MapQuest API to calculate actual driving distances with an average driving speed of ${DRIVING_SPEED_MPH} mph.`)}
+        ${tooltip(`Average travel time from KSTP to ${selectedAirport1.name} airport, in hours\n\nMileage is derived using MapQuest API to calculate actual driving distances with an average driving speed of ${DRIVING_SPEED_MPH} mph.`)}
     </td>
     <td>${selectedAirport1.drivingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`} ÷ ${DRIVING_SPEED_MPH} mph</td>
     <td>${driveHours.toFixed(2)} hrs</td>
   </tr>
   <tr>
     <td>Employee Cost
-        ${tooltip(`Employee Costs in hours from above multiplied by the number of hours they are traveling. This
-        represents their "windshield time" where they are unable to perform their duties for MnDOT. Time spent in a
-        car is considered dead time because the environment is not conducive to work.`)}</td>
-    <td>Total employee cost per hour x hours traveling</td>
+        ${tooltip(`Employee cost represents the cost to MnDOT in "windshield time" where employees are unable to perform their duties. Time spent in a car is considered dead time because the environment is not conducive to work.`)}</td>
+    <td>$${totalEmployeeCostPerHour.toLocaleString(undefined, {maximumFractionDigits: 2})} Total employee cost per hour x ${driveHours.toFixed(2)} hours traveling</td>
     <td>$${driveEmployeeTotal.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
   </tr>
   <tr>
     <td>Vehicles Needed
-        ${tooltip(`Number of vehicles needed to transport employees. We assume ${VEHICLE_CAPACITY} employees traveling per vehicle.
-        This is used to determine the total mileage which must either be reimbursed or the cost to MnDOT for a MnDOT vehicle.`)}</td>
+        ${tooltip(`Number of vehicles needed to transport employees. We assume ${VEHICLE_CAPACITY} employees traveling per vehicle.`)}</td>
     <td>${totalEmployees} employees traveling ÷ ${VEHICLE_CAPACITY} per vehicle</td>
     <td>${carsNeeded}</td>
   </tr>
   <tr>
     <td>Distance Cost
-        ${tooltip(`Total mileage cost of driving to the destination ${ROUND_TRIP ? "and back" : ""} multiplied by
-        the current federal mileage reimbursement rate of $${COST_PER_MILE.driving}, then multiplied by the number of vehicles
-        traveling.`)}</td>
+        ${tooltip(`This is the total cost of all vehicles traveling to the site and back, representing the total cost to MnDOT in either reimbursement or general costs of using the MnDOT fleet. We use the current Federal mileage reimbursement rate of $${COST_PER_MILE.driving}.`)}</td>
     <td>${selectedAirport1.drivingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`} x
         $${COST_PER_MILE.driving} Federal mileage reimbursement rate x ${carsNeeded} vehicles needed</td>
     <td>$${driveDistanceCost.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
   </tr>
   <tr>
     <td>Lodging & Meals
-        ${tooltip(`If the total hours is greater than a standard workday of ${HOURS_ALLOWED_PER_DAY} hours,
-        employees are reimbursed for an overnight stay including lodging and meals. This cost is ${LODGING_PER_PERSON} per person
-        and is based on $120 lodging cost please three meals reimbursed at $11, $13, and $19 dollars.`)}</td>
-    <td>+$${LODGING_PER_PERSON} per person if travel plus destination hours is greater than ${HOURS_ALLOWED_PER_DAY}</td>
+        ${tooltip(`If the total hours is greater than a standard workday of ${HOURS_ALLOWED_PER_DAY} hours, employees are assumed to be reimbursed for an overnight stay including lodging and meals.\n\nThis cost is $${LODGING_PER_PERSON} per person and is based on $120 lodging cost please three meals reimbursed at $11, $13, and $19.`)}</td>
+    <td>$${LODGING_PER_PERSON} per person lodging and meals x ${totalEmployees} total employees</td>
     <td>$${driveLodging.toLocaleString()}</td>
   </tr>
   <tr class="total-row">
@@ -242,20 +240,25 @@ function calculateAndRender() {
     <td><b>$${driveTotal.toLocaleString(undefined, {maximumFractionDigits: 0})}</b></td>
   </tr>
 
-  <tr><th colspan="3" style="text-align:center">Flying Costs - King Air (Employee Hours NOT included)</th></tr>
+  <tr><th colspan="3" style="text-align:center">Flying Costs - King Air</th></tr>
   <tr>
-    <td>Travel Hours</td>
-    <td>${selectedAirport1.flyingFromKSTP} miles each way ÷ ${FLYING_SPEED_MPH.kingAir} mph</td>
+    <td>Travel Hours
+      ${tooltip(`Travel hours are calculated by dividing the total direct route distance by the average speed of a King Air aircraft, which is ${FLYING_SPEED_MPH.kingAir} mph. Employee costs are not included in this calculation as the environment of these aircraft is conducive to work being done either in teams or individually on laptops.`)}</td>
+    <td>${selectedAirport1.flyingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`} ÷
+        ${FLYING_SPEED_MPH.kingAir} mph flight speed</td>
     <td>${flyHoursKingAir.toFixed(2)} hrs</td>
   </tr>
   <tr>
-    <td>Distance Cost</td>
-    <td>${selectedAirport1.flyingFromKSTP} mi * $${COST_PER_MILE.flyingKingAir} * ${ROUND_TRIP ? 2 : 1}</td>
+    <td>Distance Cost
+      ${tooltip(`The cost per flight mile of the King Air aircraft is derived by adding together both the fixed and variable costs of operating the aircraft over the preceding year and dividing by the total mileage flown. This gives an average cost per mile to of $${COST_PER_MILE.flyingKingAir} to operate this aircraft and is updated yearly.`)}</td>
+    <td>${selectedAirport1.flyingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`} x
+        $${COST_PER_MILE.flyingKingAir} cost per mile</td>
     <td>$${flyDistanceCostKingAir.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
   </tr>
   <tr>
-    <td>Lodging & Meals</td>
-    <td>+$${LODGING_PER_PERSON} per person including two pilots + $${PILOT_LODGING} pilot lodging if travel hours plus destination hours > ${HOURS_ALLOWED_PER_DAY_FLYING}</td>
+    <td>Lodging & Meals
+       ${tooltip(`If the total hours is greater than ${HOURS_ALLOWED_PER_DAY_FLYING} hours, employees are reimbursed for an overnight stay including lodging and meals, and the two pilots' worth of lodging and meals is added to the cost.\n\nThis cost is $${LODGING_PER_PERSON} per person and is based on $120 lodging cost plus three meals reimbursed at $11, $13, and $19.\n\n12 hours is used for calculating flying as employees are not required to be active during the return trip.`)}
+    <td>$${LODGING_PER_PERSON} per person lodging and meals x ${totalEmployees + 2} total employees (including pilots)</td>
     <td>$${flyLodgingKingAir.toLocaleString()}</td>
   </tr>
   <tr class="total-row">
@@ -263,20 +266,25 @@ function calculateAndRender() {
     <td><b>$${flyTotalKingAir.toLocaleString(undefined, {maximumFractionDigits: 0})}</b></td>
   </tr>
 
-  <tr><th colspan="3" style="text-align:center">Flying Costs - Kodiak (Employee Hours NOT included)</th></tr>
+  <tr><th colspan="3" style="text-align:center">Flying Costs - Kodiak</th></tr>
   <tr>
-    <td>Travel Hours</td>
-    <td>${selectedAirport1.flyingFromKSTP} miles each way ÷ ${FLYING_SPEED_MPH.kodiak} mph</td>
+    <td>Travel Hours
+    ${tooltip(`Travel hours are calculated by dividing the total direct route distance by the average speed of a Kodiak aircraft, which is ${FLYING_SPEED_MPH.kodiak} mph. Employee costs are not included in this calculation as the environment of these aircraft is conducive to work being done either in teams or individually on laptops.`)}</td>
+    <td>${selectedAirport1.flyingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`} ÷
+        ${FLYING_SPEED_MPH.kodiak} mph flight speed</td>
     <td>${flyHoursKodiak.toFixed(2)} hrs</td>
   </tr>
   <tr>
-    <td>Distance Cost</td>
-    <td>${selectedAirport1.flyingFromKSTP} mi * $${COST_PER_MILE.flyingKodiak} * ${ROUND_TRIP ? 2 : 1}</td>
+    <td>Distance Cost
+    ${tooltip(`The cost per flight mile of the Kodiak aircraft is derived by adding together both the fixed and variable costs of operating the aircraft over the preceding year and dividing by the total mileage flown. This gives an average cost per mile to of $${COST_PER_MILE.flyingKodiak} to operate this aircraft and is updated yearly.`)}</td>
+    <td>${selectedAirport1.flyingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`} x
+        $${COST_PER_MILE.flyingKodiak} cost per mile</td>
     <td>$${flyDistanceCostKodiak.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
   </tr>
   <tr>
-    <td>Lodging & Meals</td>
-    <td>+$${LODGING_PER_PERSON} per person including two pilots + $${PILOT_LODGING} pilot lodging if travel hours plus destination hours > ${HOURS_ALLOWED_PER_DAY_FLYING}</td>
+    <td>Lodging & Meals
+    ${tooltip(`If the total hours is greater than ${HOURS_ALLOWED_PER_DAY_FLYING} hours, employees are reimbursed for an overnight stay including lodging and meals, and the two pilots' worth of lodging and meals is added to the cost.\n\nThis cost is $${LODGING_PER_PERSON} per person and is based on $120 lodging cost plus three meals reimbursed at $11, $13, and $19.\n\n12 hours is used for calculating flying as employees are not required to be active during the return trip.`)}</td>
+    <td>$${LODGING_PER_PERSON} per person lodging and meals x ${totalEmployees + 2} total employees (including pilots)</td>
     <td>$${flyLodgingKodiak.toLocaleString()}</td>
   </tr>
   <tr class="total-row">

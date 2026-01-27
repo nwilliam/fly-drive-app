@@ -206,6 +206,7 @@ th {
   line-height: 1.3em;
   opacity: 0;
   transition: opacity 0.3s;
+  white-space: pre-line;
 }
 
 .tooltip-icon:hover .tooltip-text {
