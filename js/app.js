@@ -153,7 +153,7 @@ function calculateAndRender() {
 <tr>
   <td>${ROLES.directors.label}
     <span class="tooltip-icon">
-      <img alt="tooltip" src="/assets/icons/question-mark.svg"/>
+      <img alt="tooltip" src="assets/icons/question-mark.svg"/>
       <span class="tooltip-text">Average Director/P.E. cost per hour is $${ROLES.directors.hourlyRate.toFixed(2)}, includes the cost of benefits. MnDOT and PRC Aviation have determined that the value these individuals create is worth a factor of ${ROLES.directors.prcFactor} times their salary. Thus, we multiply hourly cost times the PRC factor to calculate the cost per hour of having this individual driving a vehicle rather than working. ("Windshield Time")</span>
     </span>
   </td>
@@ -163,7 +163,7 @@ function calculateAndRender() {
 <tr>
   <td>Managers
     <span class="tooltip-icon">
-      <img alt="tooltip" src="/assets/icons/question-mark.svg"/>
+      <img alt="tooltip" src="assets/icons/question-mark.svg"/>
       <span class="tooltip-text">Average Manager/Supervisor/Professional cost per hour is $${ROLES.managers.hourlyRate.toFixed(2)}, includes the cost of benefits. MnDOT and PRC Aviation have determined that the value these individuals create is worth a factor of ${ROLES.managers.prcFactor} their salary. Thus, we multiply hourly cost times the PRC factor to calculate the cost per hour of having this individual driving a vehicle rather than working. ("Windshield Time")</span>
     </span>
   </td>
@@ -173,7 +173,7 @@ function calculateAndRender() {
 <tr>
   <td>Generalists
     <span class="tooltip-icon">
-      <img alt="tooltip" src="/assets/icons/question-mark.svg"/>
+      <img alt="tooltip" src="assets/icons/question-mark.svg"/>
       <span class="tooltip-text">Average Generalist cost per hour is $${ROLES.generalists.hourlyRate.toFixed(2)}, includes the cost of benefits. MnDOT and PRC Aviation have determined that the value these individuals create is worth a factor of ${ROLES.generalists.prcFactor} their salary. Thus, we multiply hourly cost times the PRC factor to calculate the cost per hour of having this individual driving a vehicle rather than working. ("Windshield Time")</span>
     </span>
   </td>
