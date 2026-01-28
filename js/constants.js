@@ -29,7 +29,7 @@ const COST_PER_MILE = {
 };
 
 const FLYING_SPEED_MPH = {
-  kingAir: 280,
+  kingAir: 260,
   kodiak: 180
 };
 
