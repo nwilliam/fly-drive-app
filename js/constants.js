@@ -42,8 +42,8 @@ const AIRCRAFT_INFO = {
     approach_speed_mph: 150
   },
   kodiak: {
-    departure_distance: 50,
-    approach_distance: 30,
+    departure_distance:30,
+    approach_distance: 20,
     departure_speed_mph: 120,
     cruise_speed_mph: 180,
     approach_speed_mph: 120
