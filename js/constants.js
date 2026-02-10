@@ -28,10 +28,32 @@ const COST_PER_MILE = {
   flyingKodiak: 8.50 
 };
 
-const FLYING_SPEED_MPH = {
+/* There's a lot of debate on the way this should be done. These numbers specifically come from the ATS Flt Ops Calculator sheet, which is what is used for our budgets.
+I would much rather build this out in a way that makes sense. Have three "phases" of flight based on mileage - first say 50 miles is at a low speed for climb/ATC, 
+cruise is at a different speed, and last say 30 miles is at a different speed for approach. This would be a more accurate approximation - cities like St Cloud 
+(70 miles) would all be at a "Slow" speed, and cities further apart would spend more time at a "high" speed. */
+
+const AIRCRAFT_INFO = {
+  kingAir: {
+    departure_distance: 50,
+    approach_distance: 30,
+    departure_speed_mph: 180,
+    cruise_speed_mph: 280,
+    approach_speed_mph: 150
+  },
+  kodiak: {
+    departure_distance: 50,
+    approach_distance: 30,
+    departure_speed_mph: 120,
+    cruise_speed_mph: 180,
+    approach_speed_mph: 120
+  }
+}; 
+
+/* const FLYING_SPEED_MPH = {
   kingAir: 215,
   kodiak: 150
-};
+}; */
 
 const LODGING_COST = 120;
 const MEALS_COST = {

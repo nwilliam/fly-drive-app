@@ -1,10 +1,18 @@
 const destInput = document.getElementById("dest1");
 const destList = document.getElementById("dest1-list");
 
-//Replace static elements
-document.getElementById("directors-label").textContent = `${ROLES.directors.fullLabel}`;
-document.getElementById("managers-label").textContent = `${ROLES.managers.fullLabel}`;
-document.getElementById("generalists-label").textContent = `${ROLES.generalists.fullLabel}`;
+// Helper to set text content safely
+const setText = (id, value) => {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+};
+
+// Replace static elements (use setText for textContent assignments)
+setText("directors-label", ROLES.directors.fullLabel);
+setText("managers-label", ROLES.managers.fullLabel);
+setText("generalists-label", ROLES.generalists.fullLabel);
+
+// tooltips include HTML, keep using innerHTML
 document.getElementById("directors-tooltip").innerHTML = `${tooltip(`Each level of employee has a different
  level of value that they create for MnDOT, which requires them to be separated for calculation purposes. For calculation
  purposes only, ${ROLES.directors.shortLabel} have a rough yearly income greater than $${ROLES.directors.baseAvgYearly}.`)}`
@@ -15,9 +23,20 @@ document.getElementById("generalists-tooltip").innerHTML = `${tooltip(`Each leve
  level of value that they create for MnDOT, which requires them to be separated for calculation purposes. For calculation
  purposes only, ${ROLES.generalists.shortLabel} have a rough yearly income of less than $${ROLES.managers.baseAvgYearly}.`)}`
 
+// FAQ: fill placeholders from constants.js
+setText("faq-meals-breakfast", `$${MEALS_COST.breakfast}`);
+setText("faq-meals-lunch", `$${MEALS_COST.lunch}`);
+setText("faq-meals-dinner", `$${MEALS_COST.dinner}`);
+setText("faq-lodging-per-person", `$${LODGING_COST.toLocaleString()}`);
+setText("faq-vehicle-capacity", `${VEHICLE_CAPACITY}`);
+setText("faq-cost-per-mile-driving", `$${COST_PER_MILE.driving}`);
+setText("faq-cost-per-mile-flying-kingair", `$${COST_PER_MILE.flyingKingAir}`);
+setText("faq-cost-per-mile-flying-kodiak", `$${COST_PER_MILE.flyingKodiak}`);
+setText("faq-pilot-lodging", `$${PILOT_LODGING.toLocaleString()}`);
+
 function clearResults() {
-  document.getElementById("drive-total").textContent = "$—";
-  document.getElementById("fly-total").textContent = "$—";
+  setText("drive-total", "$—");
+  setText("fly-total", "$—");
   document.getElementById("breakdownTable").innerHTML =
     `<tr><td colspan="3">Enter inputs to view calculation details.</td></tr>`;
 }
@@ -31,6 +50,7 @@ function tooltip(text, iconPath = "assets/icons/question-mark.svg") {
   `;
 }
 
+// Airport selector/searcher and debounce
 let selectedAirport1 = null;
 
 function filterAirports(query) {
@@ -95,6 +115,16 @@ inputs.forEach(input => {
   input.addEventListener("input", scheduleRecalc);
 });
 
+// Handle Round Trip checkbox
+const roundTripCheckbox = document.getElementById("roundTripCheckbox");
+roundTripCheckbox.addEventListener("change", () => {
+  window.ROUND_TRIP = roundTripCheckbox.checked;
+  scheduleRecalc();
+});
+
+// Initialize ROUND_TRIP from checkbox state
+window.ROUND_TRIP = roundTripCheckbox.checked;
+
 
 // Calculation Logic
 function calculateAndRender() {
@@ -137,8 +167,29 @@ function calculateAndRender() {
     driveEmployeeTotal + driveDistanceCost + driveLodging;
 
   // Flying - King Air
+  // Commented code uses a more complex calculation of flight hours based on different speeds for different phases of flight, but I have simplified to just use an average speed for now.
+  /* const flyHoursKingAir =
+    selectedAirport1.flyingFromKSTP / FLYING_SPEED_MPH.kingAir * (ROUND_TRIP ? 2 : 1); //+ (ROUND_TRIP ? .4 : .3); */
+  
+  const cruiseMilesKingAir = Math.round(Math.max(0, selectedAirport1.flyingFromKSTP - AIRCRAFT_INFO.kingAir.departure_distance - AIRCRAFT_INFO.kingAir.approach_distance));
+  // If cruiseMiles are 0, then we have a very short flight. We need to break up departure/approach proportionally to their defined distances. Otherwise, we can just calculate hours normally.
+  let departureMilesKingAir, approachMilesKingAir = 0;
+
+  if (cruiseMilesKingAir === 0) {
+    departureMilesKingAir = Math.round(selectedAirport1.flyingFromKSTP * (AIRCRAFT_INFO.kingAir.departure_distance / (AIRCRAFT_INFO.kingAir.departure_distance + AIRCRAFT_INFO.kingAir.approach_distance)));
+    approachMilesKingAir = Math.round(selectedAirport1.flyingFromKSTP - departureMilesKingAir)
+  } else {
+    departureMilesKingAir = AIRCRAFT_INFO.kingAir.departure_distance;
+    approachMilesKingAir = AIRCRAFT_INFO.kingAir.approach_distance;
+  }
+
   const flyHoursKingAir =
-    selectedAirport1.flyingFromKSTP / FLYING_SPEED_MPH.kingAir * (ROUND_TRIP ? 2 : 1); //+ (ROUND_TRIP ? .4 : .3);
+    ((departureMilesKingAir / AIRCRAFT_INFO.kingAir.departure_speed_mph) +
+    (approachMilesKingAir / AIRCRAFT_INFO.kingAir.approach_speed_mph) +
+    cruiseMilesKingAir / AIRCRAFT_INFO.kingAir.cruise_speed_mph) *
+    (ROUND_TRIP ? 2 : 1);
+   
+  
   const flyDistanceCostKingAir =
     selectedAirport1.flyingFromKSTP * COST_PER_MILE.flyingKingAir * (ROUND_TRIP ? 2 : 1);
   const flyNumDaysKingAir =
@@ -149,8 +200,27 @@ function calculateAndRender() {
     flyDistanceCostKingAir + flyLodgingKingAir;
 
   // Flying - Kodiak
+  // Commented code uses a more complex calculation of flight hours based on different speeds for different phases of flight, but I have simplified to just use an average speed for now.
+  /* const flyHoursKodiak =
+    selectedAirport1.flyingFromKSTP / FLYING_SPEED_MPH.kodiak * (ROUND_TRIP ? 2 : 1); */
+  
+  
+  let departureMilesKodiak, approachMilesKodiak = 0;
+  const cruiseMilesKodiak = Math.round(Math.max(0, selectedAirport1.flyingFromKSTP - AIRCRAFT_INFO.kodiak.departure_distance - AIRCRAFT_INFO.kodiak.approach_distance));
+  
+  if (cruiseMilesKodiak === 0) {
+    departureMilesKodiak = Math.round(selectedAirport1.flyingFromKSTP * (AIRCRAFT_INFO.kodiak.departure_distance / (AIRCRAFT_INFO.kodiak.departure_distance + AIRCRAFT_INFO.kodiak.approach_distance)));
+    approachMilesKodiak = Math.round(selectedAirport1.flyingFromKSTP - departureMilesKodiak);
+  } else {
+    departureMilesKodiak = AIRCRAFT_INFO.kodiak.departure_distance;
+    approachMilesKodiak = AIRCRAFT_INFO.kodiak.approach_distance;
+  }
   const flyHoursKodiak =
-    selectedAirport1.flyingFromKSTP / FLYING_SPEED_MPH.kodiak * (ROUND_TRIP ? 2 : 1);
+    ((departureMilesKodiak / AIRCRAFT_INFO.kodiak.departure_speed_mph) +
+    (approachMilesKodiak / AIRCRAFT_INFO.kodiak.approach_speed_mph) +
+    cruiseMilesKodiak / AIRCRAFT_INFO.kodiak.cruise_speed_mph) *
+    (ROUND_TRIP ? 2 : 1);  
+
   const flyDistanceCostKodiak =
     selectedAirport1.flyingFromKSTP * COST_PER_MILE.flyingKodiak * (ROUND_TRIP ? 2 : 1);
   const flyNumDaysKodiak =
@@ -161,16 +231,17 @@ function calculateAndRender() {
     flyDistanceCostKodiak + flyLodgingKodiak;
 
   // Update Totals
-  document.getElementById("drive-total").textContent = "$" + driveTotal.toLocaleString(undefined, {maximumFractionDigits: 0})
-    + " - " + driveHours.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs";
-  document.getElementById("fly-total").textContent = "$" + flyTotalKingAir.toLocaleString(undefined, {maximumFractionDigits: 0})
-    + " - " + flyHoursKingAir.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs";
-  document.getElementById("fly-total-kodiak").textContent = "$" + flyTotalKodiak.toLocaleString(undefined, {maximumFractionDigits: 0})
-    + " - " + flyHoursKodiak.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs";
+  setText("drive-total", "$" + driveTotal.toLocaleString(undefined, {maximumFractionDigits: 0})
+    + " - " + driveHours.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs");
+  setText("fly-total", "$" + flyTotalKingAir.toLocaleString(undefined, {maximumFractionDigits: 0})
+    + " - " + flyHoursKingAir.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs");
+  setText("fly-total-kodiak", "$" + flyTotalKodiak.toLocaleString(undefined, {maximumFractionDigits: 0})
+    + " - " + flyHoursKodiak.toLocaleString(undefined, {maximumFractionDigits: 1}) + "hrs");
 
-  // --- Breakdown Table ---
-    const breakdownTable = document.getElementById("breakdownTable");
-    breakdownTable.innerHTML = `
+  // Build the Breakdown Table
+  // I am aware that I need to build this a bit more programatically. Instead, you get tech debt. Sorry. 
+  const breakdownTable = document.getElementById("breakdownTable");
+  breakdownTable.innerHTML = `
   <tr><th colspan="3" style="text-align:center">Employee Costs per Hour</th></tr>
   <tr>
     <td>${ROLES.directors.shortLabel}
@@ -202,7 +273,7 @@ function calculateAndRender() {
   <tr><th colspan="3" style="text-align:center">Driving Costs</th></tr>
   <tr>
     <td>Travel Hours
-        ${tooltip(`Average travel time from KSTP to ${selectedAirport1.name} airport, in hours\n\nMileage is derived using MapQuest API to calculate actual driving distances with an average driving speed of ${DRIVING_SPEED_MPH} mph.`)}
+        ${tooltip(`Average travel time from KSTP to ${selectedAirport1.name} airport, in hours\n\nMileage is derived from MapQuest to calculate actual driving distances with an average driving speed of ${DRIVING_SPEED_MPH} mph.`)}
     </td>
     <td>${selectedAirport1.drivingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`} ÷ ${DRIVING_SPEED_MPH} mph</td>
     <td>${driveHours.toFixed(2)} hrs</td>
@@ -240,9 +311,8 @@ function calculateAndRender() {
   <tr><th colspan="3" style="text-align:center">Flying Costs - King Air</th></tr>
   <tr>
     <td>Travel Hours
-      ${tooltip(`Travel hours are calculated by dividing the total direct route distance by the average speed of a King Air aircraft, which is ${FLYING_SPEED_MPH.kingAir} mph. Employee costs are not included in this calculation as the environment of these aircraft is conducive to work being done either in teams or individually on laptops.`)}</td>
-    <td>${selectedAirport1.flyingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`} ÷
-        ${FLYING_SPEED_MPH.kingAir} mph flight speed</td>
+      ${tooltip(`Travel hours are calculated using ${AIRCRAFT_INFO.kingAir.departure_speed_mph} mph for the first ${departureMilesKingAir} miles, ${AIRCRAFT_INFO.kingAir.cruise_speed_mph} mph for the cruise portion, and ${AIRCRAFT_INFO.kingAir.approach_speed_mph} mph for the last ${approachMilesKingAir} miles. Employee costs are not included in this calculation as the environment of these aircraft is conducive to work being done either in teams or individually on laptops.`)}</td>
+    <td>${selectedAirport1.flyingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`}, ${departureMilesKingAir * (ROUND_TRIP ? 2 : 1)} miles at ${AIRCRAFT_INFO.kingAir.departure_speed_mph} mph + ${cruiseMilesKingAir * (ROUND_TRIP ? 2 : 1)} miles at ${AIRCRAFT_INFO.kingAir.cruise_speed_mph} mph + ${approachMilesKingAir * (ROUND_TRIP ? 2 : 1)} miles at ${AIRCRAFT_INFO.kingAir.approach_speed_mph} mph</td>
     <td>${flyHoursKingAir.toFixed(2)} hrs</td>
   </tr>
   <tr>
@@ -266,9 +336,8 @@ function calculateAndRender() {
   <tr><th colspan="3" style="text-align:center">Flying Costs - Kodiak</th></tr>
   <tr>
     <td>Travel Hours
-    ${tooltip(`Travel hours are calculated by dividing the total direct route distance by the average speed of a Kodiak aircraft, which is ${FLYING_SPEED_MPH.kodiak} mph. Employee costs are not included in this calculation as the environment of these aircraft is conducive to work being done either in teams or individually on laptops.`)}</td>
-    <td>${selectedAirport1.flyingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`} ÷
-        ${FLYING_SPEED_MPH.kodiak} mph flight speed</td>
+    ${tooltip(`Travel hours are calculated using ${AIRCRAFT_INFO.kodiak.departure_speed_mph} mph for the first ${departureMilesKodiak} miles, ${AIRCRAFT_INFO.kodiak.cruise_speed_mph} mph for the cruise miles, and ${AIRCRAFT_INFO.kodiak.approach_speed_mph} mph for the last ${approachMilesKodiak} miles.`)}</td>
+    <td>${selectedAirport1.flyingFromKSTP * (ROUND_TRIP ? 2 : 1)} ${ROUND_TRIP ? `total round-trip miles` : `miles`}, ${departureMilesKodiak * (ROUND_TRIP ? 2 : 1)} miles at ${AIRCRAFT_INFO.kodiak.departure_speed_mph} mph + ${cruiseMilesKodiak * (ROUND_TRIP ? 2 : 1)} miles at ${AIRCRAFT_INFO.kodiak.cruise_speed_mph} mph + ${approachMilesKodiak * (ROUND_TRIP ? 2 : 1)} miles at ${AIRCRAFT_INFO.kodiak.approach_speed_mph} mph</td>
     <td>${flyHoursKodiak.toFixed(2)} hrs</td>
   </tr>
   <tr>
