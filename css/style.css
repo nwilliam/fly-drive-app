@@ -12,6 +12,7 @@ body {
   margin: 0;
   background: var(--mndot-gray-100);
   color: var(--mndot-gray-900);
+  scrollbar-gutter: stable;
 }
 
 .site-header {
@@ -96,6 +97,7 @@ input, select {
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   font-size: 0.9rem;
+  box-sizing: border-box;
 }
 
 .static-field {
@@ -106,6 +108,7 @@ input, select {
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   font-size: 0.9rem;
+  box-sizing: border-box;
 }
 
 .hint {

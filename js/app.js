@@ -247,23 +247,23 @@ function calculateAndRender() {
   <tr><th colspan="3" style="text-align:center">Employee Costs per Hour</th></tr>
   <tr>
     <td>${ROLES.directors.shortLabel}
-        ${tooltip(`Average ${ROLES.directors.shortLabel} compensation per hour is $${ROLES.directors.hourlyRate.toFixed(2)}, including the cost of benefits.\n\nA MnDOT study has determined that the value these individuals create is worth a Value Factor of ${ROLES.directors.prcFactor} times their compensation.\n\nTo calculate the hourly cost of having this individual driving a vehicle and not working ("windshield time"), we multiply this Value Factor times the average hourly compensation.`)}
+        ${tooltip(`Average ${ROLES.directors.shortLabel} compensation per hour is $${ROLES.directors.hourlyRate.toFixed(2)}, including the cost of benefits.\n\nA study by the NBAA has determined that the value these individuals create is worth a Productivity Factor of ${ROLES.directors.prcFactor} times their compensation.\n\nTo calculate the hourly cost of having this individual driving a vehicle and not working ("windshield time"), we multiply this Productivity Factor times the average hourly compensation.`)}
     </td>
-    <td>${ROLES.directors.hourlyRate.toFixed(2)}/hr cost x ${ROLES.directors.prcFactor} Value Factor x ${numDirectors} ${ROLES.directors.shortLabel.toLowerCase()} traveling</td>
+    <td>${ROLES.directors.hourlyRate.toFixed(2)}/hr cost x ${ROLES.directors.prcFactor} Productivity Factor x ${numDirectors} ${ROLES.directors.shortLabel.toLowerCase()} traveling</td>
     <td>$${costDirectors.toLocaleString(undefined, {maximumFractionDigits: 2})}/hr</td>
   </tr>
   <tr>
     <td>${ROLES.managers.shortLabel}
-      ${tooltip(`Average ${ROLES.managers.shortLabel} compensation per hour is $${ROLES.managers.hourlyRate.toFixed(2)}, including the cost of benefits.\n\nA MnDOT study has determined that the value these individuals create is worth a Value Factor of ${ROLES.managers.prcFactor} times their compensation.\n\nTo calculate the hourly cost of having this individual driving a vehicle and not working ("windshield time"), we multiply this Value Factor times the average hourly compensation.`)}
+      ${tooltip(`Average ${ROLES.managers.shortLabel} compensation per hour is $${ROLES.managers.hourlyRate.toFixed(2)}, including the cost of benefits.\n\nA study by the NBAA has determined that the value these individuals create is worth a Productivity Factor of ${ROLES.managers.prcFactor} times their compensation.\n\nTo calculate the hourly cost of having this individual driving a vehicle and not working ("windshield time"), we multiply this Productivity Factor times the average hourly compensation.`)}
     </td>
-    <td>${ROLES.managers.hourlyRate.toFixed(2)}/hr cost x ${ROLES.managers.prcFactor} Value Factor x ${numManagers} ${ROLES.managers.shortLabel.toLowerCase()} traveling</td>
+    <td>${ROLES.managers.hourlyRate.toFixed(2)}/hr cost x ${ROLES.managers.prcFactor} Productivity Factor x ${numManagers} ${ROLES.managers.shortLabel.toLowerCase()} traveling</td>
     <td>$${costManagers.toLocaleString(undefined, {maximumFractionDigits: 2})}/hr</td>
   </tr>
   <tr>
     <td>${ROLES.generalists.shortLabel}
-      ${tooltip(`Average ${ROLES.generalists.shortLabel} compensation per hour is $${ROLES.generalists.hourlyRate.toFixed(2)}, including the cost of benefits.\n\nA MnDOT study has determined that the value these individuals create is worth a Value Factor of ${ROLES.generalists.prcFactor} times their compensation.\n\nTo calculate the hourly cost of having this individual driving a vehicle and not working ("windshield time"), we multiply this Value Factor times the average hourly compensation.`)}</td>
+      ${tooltip(`Average ${ROLES.generalists.shortLabel} compensation per hour is $${ROLES.generalists.hourlyRate.toFixed(2)}, including the cost of benefits.\n\nA study by the NBAA has determined that the value these individuals create is worth a Productivity Factor of ${ROLES.generalists.prcFactor} times their compensation.\n\nTo calculate the hourly cost of having this individual driving a vehicle and not working ("windshield time"), we multiply this Productivity Factor times the average hourly compensation.`)}</td>
     </td>
-    <td>${ROLES.generalists.hourlyRate.toFixed(2)}/hr cost x ${ROLES.generalists.prcFactor} Value Factor x ${numGeneralists} ${ROLES.generalists.shortLabel.toLowerCase()} traveling</td>
+    <td>${ROLES.generalists.hourlyRate.toFixed(2)}/hr cost x ${ROLES.generalists.prcFactor} Productivity Factor x ${numGeneralists} ${ROLES.generalists.shortLabel.toLowerCase()} traveling</td>
     <td>$${costGeneralists.toLocaleString(undefined, {maximumFractionDigits: 2})}/hr</td>
   </tr>
   <tr class="total-row">
@@ -309,7 +309,9 @@ function calculateAndRender() {
     <td colspan="2"><b>Total Driving</b></td>
     <td><b>$${driveTotal.toLocaleString(undefined, {maximumFractionDigits: 0})}</b></td>
   </tr>
-
+  
+  
+  <!-- KING AIR STARTS HERE -->
   <tr><th colspan="3" style="text-align:center">Flying Costs - King Air</th></tr>
   <tr>
     <td>Travel Hours
@@ -335,6 +337,8 @@ function calculateAndRender() {
     <td><b>$${flyTotalKingAir.toLocaleString(undefined, {maximumFractionDigits: 0})}</b></td>
   </tr>
 
+  
+  <!--- KODIAK STARTS HERE -->
   <tr><th colspan="3" style="text-align:center">Flying Costs - Kodiak</th></tr>
   <tr>
     <td>Travel Hours
