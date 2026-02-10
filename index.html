@@ -10,6 +10,8 @@
   <title>Fly or Drive Cost Comparison Tool</title>
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <link href="css/style.css" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/small_plane_top_view.svg">
+  <link rel="apple-touch-icon" href="assets/icons/small_plane_top_view.svg">
 </head>
 
 <body>
@@ -42,10 +44,10 @@
 
       <div class="autocomplete-container">
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0; flex-wrap: wrap;">
-          <label for="dest1" style="margin: 0;">Destination Airport</label>
-          <div style="display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; font-size: 0.9rem; margin-left: auto;">
-            <input type="checkbox" id="roundTripCheckbox" style="margin: 0;" checked>
-            <label for="roundTripCheckbox" style="margin: 0; font-size: small;">Round Trip</label>
+          <label for="dest1" >Destination Airport</label>
+          <div style="display: flex; align-items: center; white-space: nowrap; font-size: 0.7rem; margin-left: auto; gap: 0.25rem;">
+            <input type="checkbox" id="roundTripCheckbox" checked>
+            <label for="roundTripCheckbox" style="font-size: small;">Round Trip</label>
           </div>
         </div>
         <input autocomplete="off" id="dest1" placeholder="Enter ICAO, FAA code, or airport name" type="text">
