@@ -138,7 +138,7 @@ function calculateAndRender() {
 
   // Flying - King Air
   const flyHoursKingAir =
-    selectedAirport1.flyingFromKSTP / FLYING_SPEED_MPH.kingAir * (ROUND_TRIP ? 2 : 1) + (ROUND_TRIP ? .4 : .3);
+    selectedAirport1.flyingFromKSTP / FLYING_SPEED_MPH.kingAir * (ROUND_TRIP ? 2 : 1); //+ (ROUND_TRIP ? .4 : .3);
   const flyDistanceCostKingAir =
     selectedAirport1.flyingFromKSTP * COST_PER_MILE.flyingKingAir * (ROUND_TRIP ? 2 : 1);
   const flyNumDaysKingAir =
