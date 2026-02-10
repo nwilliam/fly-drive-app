@@ -33,28 +33,30 @@
     <h2>Trip Information</h2>
     <div class="form-grid">
       <div>
-        <label>Departure Airport</label>
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0;">
+          <label>Departure Airport</label>
+        </div>
         <div class="static-field">KSTP – St. Paul Downtown / Holman Field</div>
         <!--<div class="hint">Round trip origin and return airport</div>-->
       </div>
 
       <div class="autocomplete-container">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <div style="flex: 1;">
-            <label for="dest1">Destination Airport</label>
-            <input autocomplete="off" id="dest1" placeholder="Enter ICAO, FAA code, or airport name" type="text">
-            <div class="autocomplete-list" hidden id="dest1-list"></div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <input type="checkbox" id="roundTripCheckbox" checked>
-            <label for="roundTripCheckbox" style="margin: 0;">Round Trip</label>
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0;">
+          <label for="dest1" style="margin: 0;">Destination Airport</label>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto; white-space: nowrap; font-size: 0.9rem;">
+            <input type="checkbox" id="roundTripCheckbox" style="margin: 0;" checked>
+            <label for="roundTripCheckbox" style="margin: 0; font-size: small;">Round Trip</label>
           </div>
         </div>
+        <input autocomplete="off" id="dest1" placeholder="Enter ICAO, FAA code, or airport name" type="text">
+        <div class="autocomplete-list" hidden id="dest1-list"></div>
         <!--<div class="hint">Start typing to see matching airports</div>-->
       </div>
 
       <div>
-        <label for="hours1">Hours at Destination</label>
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0;">
+          <label for="hours1">Hours at Destination</label>
+        </div>
         <input id="hours1" min="0" type="number" value="0">
       </div>
     </div>
@@ -86,17 +88,17 @@
     <div class="results-grid">
       <div class="result-card">
         <h3>Driving</h3>
-        <div>Total Round-Trip Cost</div>
+        <div id="drive-cost-label">Total Cost</div>
         <div class="total" id="drive-total">$—</div>
       </div>
       <div class="result-card">
         <h3>Flying – King Air</h3>
-        <div>Total Round-Trip Cost</div>
+        <div id="fly-cost-label">Total Cost</div>
         <div class="total" id="fly-total">$—</div>
       </div>
       <div class="result-card">
         <h3>Flying – Kodiak</h3>
-        <div>Total Round-Trip Cost</div>
+        <div id="fly-cost-label-kodiak">Total Cost</div>
         <div class="total" id="fly-total-kodiak">$—</div>
       </div>
     </div>
@@ -208,7 +210,7 @@
           <li><span id="faq-cost-per-mile-driving"></span>/mile vehicle cost</li>
           <li><span id="faq-cost-per-mile-flying-kingair"></span>/mile King Air airplane cost</li>
           <li><span id="faq-cost-per-mile-flying-kodiak"></span>/mile Kodiak airplane cost</li>
-          <li>Overnight flying trip add <span id="faq-pilot-lodging"></span> for lodging and meals for two pilots</li>
+          <li>Overnight flying trips automatically add 2 employees worth of lodging and meals for two pilots</li>
         </ul>
       </div>
     </div>

@@ -67,4 +67,4 @@ const PILOT_LODGING = 272; // Why are we doing this separately? Maybe we should 
 const DRIVING_SPEED_MPH = 50;
 const HOURS_ALLOWED_PER_DAY = 10;
 const HOURS_ALLOWED_PER_DAY_FLYING = 12;
-const ROUND_TRIP = true; // can be used to multiply distances/times
+//const ROUND_TRIP = true; // can be used to multiply distances/times
