@@ -3,7 +3,7 @@ const ROLES = {
     shortLabel: "Directors",
     fullLabel: "Office Directors / Principle Engineers",
     hourlyRate: 86.53,
-    prcFactor: 5.7,
+    prcFactor: 3.8,
     baseAvgYearly: "120,000"
   },
   managers: {
@@ -17,7 +17,7 @@ const ROLES = {
     shortLabel: "Generalists",
     fullLabel: "Transportation Generalists",
     hourlyRate: 51.40,
-    prcFactor: 2.4,
+    prcFactor: 3.8,
     baseAvgYearly: "40,000"
   }
 };
