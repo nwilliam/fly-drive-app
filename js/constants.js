@@ -69,4 +69,19 @@ const PILOT_LODGING = 272; // Why are we doing this separately? Maybe we should 
 const DRIVING_SPEED_MPH = 55;
 const HOURS_ALLOWED_PER_DAY = 10;
 const HOURS_ALLOWED_PER_DAY_FLYING = 12;
+const GENERALIST_PERCENTAGE = 0.05; // 5% of total personnel allocated as generalists
 //const ROUND_TRIP = true; // can be used to multiply distances/times
+
+// Export constants to window for use in other scripts
+window.ROLES = ROLES;
+window.COST_PER_MILE = COST_PER_MILE;
+window.AIRCRAFT_INFO = AIRCRAFT_INFO;
+window.LODGING_COST = LODGING_COST;
+window.MEALS_COST = MEALS_COST;
+window.VEHICLE_CAPACITY = VEHICLE_CAPACITY;
+window.ACCOMMODATIONS_PER_PERSON = ACCOMMODATIONS_PER_PERSON;
+window.PILOT_LODGING = PILOT_LODGING;
+window.DRIVING_SPEED_MPH = DRIVING_SPEED_MPH;
+window.HOURS_ALLOWED_PER_DAY = HOURS_ALLOWED_PER_DAY;
+window.HOURS_ALLOWED_PER_DAY_FLYING = HOURS_ALLOWED_PER_DAY_FLYING;
+window.GENERALIST_PERCENTAGE = GENERALIST_PERCENTAGE;

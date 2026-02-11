@@ -1281,4 +1281,9 @@ const AIRPORTS = [
   { name:"M Graham Clark Downtown", icao:"KPLK", faa:"PLK", lat:36.6259, lon:-93.2289, flyingFromKSTP:573.85, drivingFromKSTP:651 },
   { name:"Strother Field", icao:"KWLD", faa:"WLD", lat:37.1686, lon:-97.0375, flyingFromKSTP:575, drivingFromKSTP:661 },
   { name:"Sturgis Municipal", icao:"KTWT", faa:"TWT", lat:37.5418, lon:-87.9544, flyingFromKSTP:575, drivingFromKSTP:698 },
+  { name: "Ray S Miller Army Airfield", icao: "KRYM", faa: "RYM", lat: 46.0919, lon: -94.3616, flyingFromKSTP:102, drivingFromKSTP:118},
+  { name: "John Murtha Johnstown/Cambria County Airport", icao: "KJST", faa: "JST", lat: 40.3175, lon: -78.8360, flyingFromKSTP: 790, drivingFromKSTP: 925 }
 ];
+
+// Export to window for use in other scripts
+window.AIRPORTS = AIRPORTS;
