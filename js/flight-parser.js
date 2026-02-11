@@ -78,7 +78,7 @@ function parseCSV(csvText) {
 }
 
 // Invalid passenger types to filter
-const INVALID_PASSENGERS = ['miles', 'deadhead', 'training', 'aeronautics', 'deadhead, miles', ''];
+const INVALID_PASSENGERS = ['miles', 'deadhead', 'training', 'aeronautics', 'deadhead, miles', 'training, aeronau', ''];
 const NAVAIDS_PASSENGERS = ['kremer, nicholas', 'canelon-lander, luis'];
 
 // Check if passenger is valid

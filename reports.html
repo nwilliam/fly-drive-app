@@ -314,7 +314,10 @@
       "sean skibbie",
       "devin henry",
       "seema desai",
-      "james cownie"
+      "james cownie",
+      "peggy l flanagan",
+      "timothy walz",
+      "bob bennett",
     ];
 
     let reportData = null;
@@ -330,7 +333,7 @@
 
     // Initialize directors list
     directorsList = DIRECTORS_DATA;
-    showStatus('Directors list loaded', 'info');
+    //showStatus('Directors list loaded', 'info'); //debug
 
     function showStatus(msg, type) {
       statusEl.textContent = msg;
@@ -443,6 +446,7 @@
         '<th>Miles Driven</th>' +
         '<th>Cost Flying</th>' +
         '<th>Cost Driving</th>' +
+        '<th>Cost Savings</th>' +
         '</tr></thead><tbody>';
 
       for (const flight of flights) {
@@ -461,6 +465,7 @@
           `<td>${Math.round(flight.driveDistance).toLocaleString()}</td>` +
           `<td>$${Math.round(flight.costFly.total).toLocaleString()}</td>` +
           `<td>$${Math.round(flight.costDrive.total).toLocaleString()}</td>` +
+          `<td>$${Math.round(flight.costDrive.total - flight.costFly.total).toLocaleString()}</td>` +
           '</tr>';
       }
 
@@ -605,8 +610,8 @@
     });
 
     // Set default dates for testing
-    startDateInput.value = '2025-01-01';
-    endDateInput.value = '2025-12-31';
+    startDateInput.value = '2020-01-01';
+    endDateInput.value = new Date().toISOString().split('T')[0];
   </script>
 </body>
 </html>
