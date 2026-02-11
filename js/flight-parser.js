@@ -79,6 +79,7 @@ function parseCSV(csvText) {
 
 // Invalid passenger types to filter
 const INVALID_PASSENGERS = ['miles', 'deadhead', 'training', 'aeronautics', 'deadhead, miles', ''];
+const NAVAIDS_PASSENGERS = ['kremer, nicholas', 'canelon-lander, luis'];
 
 // Check if passenger is valid
 function isValidPassenger(name) {
@@ -133,7 +134,13 @@ function cleanFlightLog(csvText) {
     if (passengers.length === 0) {
       continue;
     }
-    
+
+    console.log(passengers);
+    if (passengers.length === 1 && passengers.some(element => NAVAIDS_PASSENGERS.includes(element.toLowerCase().trim()))) {
+      console.log("Skipping NavAids flight with passengers: " + passengers.join(", ")); // Debug log for NavAids flights
+      continue; // Skips NavAids flights that only have the NAVAIDS passenger, as these are not real passengers but rather a code for certain types of flights.
+    };
+
     // Add cleaned row
     cleaned.push({
       date: new Date(dateStr),
