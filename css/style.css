@@ -1,8 +1,12 @@
+/* This file is a complete mess, mostly because I am bad at CSS. I would like to rewrite it at some point, but for now it works and I don't want to break it. */
+
 :root {
   --mndot-blue: #003865;
   --mndot-gray-900: #2e2e2e;
   --mndot-gray-700: #5c5c5c;
   --mndot-gray-100: #f4f4f4;
+  --mndot-gray-light: #cfcfcf;
+  --mndot-gray-lighter: #f0f0f0;
   --border-radius: 6px;
   --border-color: #d0d0d0;
 }
@@ -22,6 +26,7 @@ body {
   margin: 0;
   background: var(--mndot-gray-100);
   color: var(--mndot-gray-900);
+  scrollbar-gutter: stable;
 }
 
 .site-header {
@@ -88,8 +93,10 @@ section h2 {
   gap: 1rem;
 }
 
-.form-grid-spaced {
-  margin-top: 1rem;
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 label {
@@ -110,6 +117,7 @@ input, select {
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   font-size: 0.9rem;
+  box-sizing: border-box;
 }
 
 .static-field {
@@ -120,6 +128,12 @@ input, select {
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: var(--mndot-gray-700);
 }
 
 .autocomplete-container {
@@ -560,6 +574,287 @@ th {
   color: var(--mndot-gray-900);
   font-size: 0.95rem;
   line-height: 1.5;
+}
+
+/* Reports page styles */
+.report-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.report-section {
+  margin-bottom: 30px;
+}
+
+.report-section h2 {
+  color: var(--mndot-blue);
+  border-bottom: 2px solid var(--mndot-blue);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input[type="file"],
+.form-group input[type="date"] {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.date-range {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.date-range .form-group {
+  flex: 1;
+  min-width: 150px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.report-filter-group {
+  margin-bottom: 10px;
+}
+
+.report-filter-section {
+  display: none;
+}
+
+.report-filter-section.is-open {
+  display: flex;
+}
+
+button {
+  padding: 12px 24px;
+  font-size: 14px;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-process {
+  background-color: var(--mndot-blue);
+  color: white;
+}
+
+.btn-process:hover {
+  background-color: #003f87;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-process:disabled {
+  background-color: var(--mndot-gray-light);
+  cursor: not-allowed;
+}
+
+.btn-download {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-download:hover {
+  background-color: #218838;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-download:disabled {
+  background-color: var(--mndot-gray-light);
+  cursor: not-allowed;
+}
+
+.status-message {
+  padding: 12px;
+  border-radius: var(--border-radius);
+  margin-bottom: 15px;
+  display: none;
+}
+
+.status-message.show {
+  display: block;
+}
+
+.status-message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-message.info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.results-table th,
+.results-table td {
+  padding: 12px;
+  text-align: right;
+  border: 1px solid var(--border-color);
+}
+
+.results-table th {
+  background-color: var(--mndot-blue);
+  color: white;
+  font-weight: 600;
+}
+
+.results-table td:first-child,
+.results-table th:first-child {
+  text-align: left;
+}
+
+.results-table tr:nth-child(even) {
+  background-color: var(--mndot-gray-lighter);
+}
+
+.results-table tr:hover {
+  background-color: #e8f0f7;
+}
+
+.results-table__totals {
+  font-weight: bold;
+}
+
+.results-table__totals-cell {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+.results-table--detailed {
+  margin-bottom: 20px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--mndot-blue);
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--mndot-gray-light);
+  border-top-color: var(--mndot-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.report-errors {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: var(--border-radius);
+}
+
+.report-errors__title {
+  margin-top: 0;
+  color: #856404;
+}
+
+.report-errors__list {
+  margin-bottom: 0;
+}
+
+.report-errors__item {
+  color: #856404;
+}
+
+.report-details {
+  margin-top: 40px;
+}
+
+.report-details__title {
+  color: var(--mndot-blue);
+  border-bottom: 2px solid var(--mndot-blue);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.report-details__toggle {
+  margin-bottom: 15px;
+}
+
+.report-details__table {
+  display: none;
+}
+
+.report-details__table.is-open {
+  display: block;
+}
+
+.is-hidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .report-container {
+    padding: 15px;
+  }
+
+  .date-range {
+    flex-direction: column;
+  }
+
+  .date-range .form-group {
+    min-width: 100%;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  .results-table {
+    font-size: 12px;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 8px;
+  }
 }
 
 .faq-answer p {

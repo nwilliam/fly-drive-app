@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flight Report Generator - Fly Drive Comparison</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/small_plane_top_view.svg">
+  <link rel="apple-touch-icon" href="assets/icons/small_plane_top_view.svg">
+</head>
+<body>
+  <div class="report-container">
+    <div class="report-section">
+      <h2>Flight Report Generator</h2>
+      <p>Upload a flight log CSV and select a date range to generate a monthly cost comparison report.</p>
+    </div>
+
+    <div class="report-section">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="form-group">
+        <label for="csvFile">Upload Flight Log CSV</label>
+        <input type="file" id="csvFile" accept=".csv" required>
+      </div>
+
+      <div class="button-group report-filter-group">
+        <button type="button" class="btn-process" id="filterToggleBtn">Filter</button>
+      </div>
+
+      <div class="date-range report-filter-section" id="filterSection">
+        <div class="form-group">
+          <label for="startDate">Start Date</label>
+          <input type="date" id="startDate">
+        </div>
+        <div class="form-group">
+          <label for="endDate">End Date</label>
+          <input type="date" id="endDate">
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn-process" id="processBtn">Generate Report</button>
+        <button class="btn-download" id="downloadBtn" disabled>Download CSV</button>
+      </div>
+    </div>
+
+    <div id="resultsSection" class="report-section is-hidden">
+      <h2>Monthly Summary Report</h2>
+      <div id="resultsContainer"></div>
+    </div>
+  </div>
+
+  <script src="js/constants.js"></script>
+  <script src="js/airports.js"></script>
+  <script src="js/distance-calc.js"></script>
+  <script src="js/passenger-classifier.js"></script>
+  <script src="js/cost-calculator.js"></script>
+  <script src="js/flight-parser.js"></script>
+  <script src="js/reports.js"></script>
+  <script>
+    let reportData = null;
+    let directorsList = null;
+    const statusEl = document.getElementById('statusMessage');
+    const resultsSection = document.getElementById('resultsSection');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const processBtn = document.getElementById('processBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const csvFileInput = document.getElementById('csvFile');
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const filterToggleBtn = document.getElementById('filterToggleBtn');
+    const filterSection = document.getElementById('filterSection');
+
+    filterToggleBtn.addEventListener('click', () => {
+      filterSection.classList.toggle('is-open');
+    });
+
+    // Initialize directors list
+    directorsList = window.DIRECTORS_DATA || [];
+    //showStatus('Directors list loaded', 'info'); //debug
+
+    function showStatus(msg, type) {
+      statusEl.textContent = msg;
+      statusEl.className = `status-message show ${type}`;
+    }
+
+    function renderTable(data) {
+      if (!data || data.length === 0) {
+        resultsContainer.innerHTML = '<p>No data to display</p>';
+        return;
+      }
+
+      const months = data.map(m => m.month);
+      let html = '<table class="results-table"><thead><tr><th>Metric</th>';
+      
+      for (const month of months) {
+        html += `<th>${month}</th>`;
+      }
+      html += '<th class="results-table__totals">Totals</th></tr></thead><tbody>';
+
+      const metrics = [
+        { key: 'directors', label: 'Number of Directors' },
+        { key: 'managers', label: 'Number of Managers' },
+        { key: 'generalists', label: 'Number of Generalists' },
+        { key: 'totalMilesFly', label: 'Total Miles Flown' },
+        { key: 'totalMilesDrive', label: 'Total Miles if Driven' },
+        { key: 'totalCostDrive', label: 'Total Cost of Driving' },
+        { key: 'totalCostFly', label: 'Total Cost of Flying' },
+        { key: 'savings', label: 'Savings (Driving - Flying)' }
+      ];
+
+      for (const metric of metrics) {
+        html += `<tr><td>${metric.label}</td>`;
+        let rowTotal = 0;
+        for (const month of data) {
+          let value = month[metric.key] !== undefined ? month[metric.key] : 0;
+          rowTotal += value;
+          // Format currency and large numbers
+          if (metric.key.includes('Cost') || metric.key === 'savings') {
+            value = Math.round(value).toLocaleString();
+          } else if (metric.key.includes('Miles')) {
+            value = Math.round(value).toLocaleString();
+          }
+          html += `<td>${value}</td>`;
+        }
+        // Add totals column
+        let totalDisplay = Math.round(rowTotal).toLocaleString();
+        if (metric.key.includes('Cost') || metric.key === 'savings') {
+          totalDisplay = Math.round(rowTotal).toLocaleString();
+        } else if (metric.key.includes('Miles')) {
+          totalDisplay = Math.round(rowTotal).toLocaleString();
+        }
+        html += `<td class="results-table__totals-cell">${totalDisplay}</td>`;
+        html += '</tr>';
+      }
+
+      html += '</tbody></table>';
+      resultsContainer.innerHTML = html;
+    }
+
+    function displayErrors(errors) {
+      const errorContainer = document.createElement('div');
+      errorContainer.className = 'report-errors';
+      
+      const errorTitle = document.createElement('h3');
+      errorTitle.className = 'report-errors__title';
+      errorTitle.textContent = `⚠️ ${errors.length} Flight(s) Skipped`;
+      
+      const errorList = document.createElement('ul');
+      errorList.className = 'report-errors__list';
+      for (const error of errors) {
+        const li = document.createElement('li');
+        li.className = 'report-errors__item';
+        li.textContent = error;
+        errorList.appendChild(li);
+      }
+      
+      errorContainer.appendChild(errorTitle);
+      errorContainer.appendChild(errorList);
+      resultsContainer.appendChild(errorContainer);
+    }
+
+    function renderDetailedFlights(flights) {
+      if (!flights || flights.length === 0) return;
+
+      const sortedFlights = [...flights].sort((a, b) => {
+        const aDate = new Date(a.date);
+        const bDate = new Date(b.date);
+        return aDate - bDate;
+      });
+
+      const detailsSection = document.createElement('div');
+      detailsSection.className = 'report-details';
+      
+      const title = document.createElement('h2');
+      title.className = 'report-details__title';
+      title.textContent = 'Detailed Flight Breakdown';
+      detailsSection.appendChild(title);
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'btn-process report-details__toggle';
+      toggleBtn.textContent = 'Show Detailed Flight Breakdown';
+      detailsSection.appendChild(toggleBtn);
+
+      let html = '<table class="results-table results-table--detailed"><thead><tr>' +
+        '<th>Date</th>' +
+        '<th>Aircraft</th>' +
+        '<th>Departure</th>' +
+        '<th>Destination</th>' +
+        '<th>Directors</th>' +
+        '<th>Managers</th>' +
+        '<th>Miles Flown</th>' +
+        '<th>Miles Driven</th>' +
+        '<th>Cost Flying</th>' +
+        '<th>Cost Driving</th>' +
+        '<th>Cost Savings</th>' +
+        '</tr></thead><tbody>';
+
+      for (const flight of sortedFlights) {
+        const aircraftType = window.CostCalculator.detectAircraftType(flight.tail) === 'kingAir' ? 'King Air' : 'Kodiak';
+        const directors = flight.classified.directors.join('\n') || '—';
+        const managers = flight.classified.managers.join('\n') || '—';
+        
+        html += '<tr>' +
+          `<td>${flight.dateStr}</td>` +
+          `<td>${aircraftType}</td>` +
+          `<td>${flight.origin}</td>` +
+          `<td>${flight.destination}</td>` +
+          `<td>${directors}</td>` +
+          `<td>${managers}</td>` +
+          `<td>${Math.round(flight.flyDistance).toLocaleString()}</td>` +
+          `<td>${Math.round(flight.driveDistance).toLocaleString()}</td>` +
+          `<td>$${Math.round(flight.costFly.total).toLocaleString()}</td>` +
+          `<td>$${Math.round(flight.costDrive.total).toLocaleString()}</td>` +
+          `<td>$${Math.round(flight.costDrive.total - flight.costFly.total).toLocaleString()}</td>` +
+          '</tr>';
+      }
+
+      html += '</tbody></table>';
+      
+      const table = document.createElement('div');
+      table.innerHTML = html;
+      table.className = 'report-details__table';
+      detailsSection.appendChild(table);
+
+      toggleBtn.addEventListener('click', () => {
+        const isHidden = !table.classList.contains('is-open');
+        table.classList.toggle('is-open');
+        toggleBtn.textContent = isHidden
+          ? 'Hide Detailed Flight Breakdown'
+          : 'Show Detailed Flight Breakdown';
+      });
+      resultsContainer.appendChild(detailsSection);
+    }
+
+    processBtn.addEventListener('click', async () => {
+      if (!csvFileInput.files.length) {
+        showStatus('Please select a CSV file', 'error');
+        return;
+      }
+
+      if (!directorsList) {
+        showStatus('Directors list not loaded. Please refresh the page.', 'error');
+        return;
+      }
+
+      const hasStartDate = Boolean(startDateInput.value);
+      const hasEndDate = Boolean(endDateInput.value);
+      const startDate = hasStartDate ? new Date(startDateInput.value) : null;
+      const endDate = hasEndDate ? new Date(endDateInput.value) : null;
+
+      if (hasStartDate && hasEndDate && startDate > endDate) {
+        showStatus('Start date must be before end date', 'error');
+        return;
+      }
+
+      // Read and process file
+      const file = csvFileInput.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        try {
+          processBtn.disabled = true;
+          showStatus('Processing flight log...', 'info');
+
+          const csvText = e.target.result;
+          
+          // Parse and clean flight log
+          const cleanedFlights = window.FlightParser.cleanFlightLog(csvText);
+          const skippedNoPassengers = cleanedFlights.stats?.skippedNoPassengers || 0;
+          const skippedNavaids = cleanedFlights.stats?.skippedNavaids || 0;
+          
+          if (cleanedFlights.length === 0) {
+            showStatus('No valid flights found in the uploaded file', 'error');
+            processBtn.disabled = false;
+            return;
+          }
+
+          // Filter by date range
+          const filteredFlights = cleanedFlights.filter(f => {
+            if (!hasStartDate && !hasEndDate) return true;
+            const flightDate = new Date(f.date);
+            if (hasStartDate && flightDate < startDate) return false;
+            if (hasEndDate && flightDate > endDate) return false;
+            return true;
+          });
+
+          if (filteredFlights.length === 0) {
+            showStatus('No flights found in the selected date range', 'error');
+            processBtn.disabled = false;
+            return;
+          }
+
+          // Process all flights
+          const processResult = await window.FlightReports.processAllFlights(
+            filteredFlights,
+            directorsList
+          );
+          
+          const processedFlights = processResult.flights;
+          const errors = processResult.errors || [];
+
+          // Aggregate by month
+          const monthlyData = window.FlightReports.aggregateByMonth(processedFlights);
+
+          // Generate CSV
+          const csv = window.FlightReports.generateReportCSV(
+            monthlyData,
+            startDateInput.value || 'all',
+            endDateInput.value || 'all'
+          );
+
+          // Store for download
+          reportData = {
+            csv,
+            startDate: startDateInput.value || 'all',
+            endDate: endDateInput.value || 'all',
+            monthlyData
+          };
+
+          // Display results
+          renderTable(monthlyData);
+          renderDetailedFlights(processedFlights);
+          resultsSection.classList.remove('is-hidden');
+          downloadBtn.disabled = false;
+          
+          let successMsg = `Report generated successfully from ${processedFlights.length} flights`;
+          if (errors.length > 0) {
+            successMsg += ` (${errors.length} flights skipped due to errors)`;
+          }
+          if (skippedNoPassengers > 0 || skippedNavaids > 0) {
+            successMsg += ` — Skipped ${skippedNoPassengers} with no passengers, ${skippedNavaids} Navaids flights`;
+          }
+          showStatus(successMsg, 'success');
+          
+          // Display errors if any
+          if (errors.length > 0) {
+            displayErrors(errors);
+          }
+        } catch (error) {
+          showStatus(`Error processing report: ${error.message}`, 'error');
+        } finally {
+          processBtn.disabled = false;
+        }
+      };
+
+      reader.onerror = () => {
+        showStatus('Error reading file', 'error');
+        processBtn.disabled = false;
+      };
+
+      reader.readAsText(file);
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (!reportData) {
+        showStatus('No report generated yet', 'error');
+        return;
+      }
+
+      const { csv, startDate, endDate } = reportData;
+      const filename = `flight-report_${startDate}_${endDate}.csv`;
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Dates are optional; when omitted all flights are included.
+  </script>
+</body>
+</html>
