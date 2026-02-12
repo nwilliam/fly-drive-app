@@ -33,6 +33,12 @@
 <main>
   <section>
     <h2>Trip Information</h2>
+    <div class="trip-options" id="trip-options">
+      <label class="trip-toggle" for="round-trip-toggle">
+        <input checked id="round-trip-toggle" type="checkbox">
+        Round trip
+      </label>
+    </div>
     <div class="city-pairs" id="city-pairs"></div>
     <div class="pair-actions">
       <button class="add-pair-btn" id="add-city-pair" type="button">
@@ -156,7 +162,7 @@
   </section>
 
   <section>
-    <h2>Results (Round Trip)</h2>
+    <h2 id="results-heading">Results (Round Trip)</h2>
     <div class="results-grid">
       <div class="result-card">
         <h3>Driving</h3>
@@ -306,6 +312,7 @@
 <script src="js/form-errors.js"></script>
 <script src="js/dom-cache.js"></script>
 <script src="js/autocomplete.js"></script>
+<script src="js/distance-calc.js"></script>
 <script src="js/calculations.js"></script>
 <script src="js/breakdown-render.js"></script>
 <script src="js/date-time-picker.js"></script>

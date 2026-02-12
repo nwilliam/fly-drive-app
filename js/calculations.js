@@ -4,7 +4,8 @@ const calculateTripCosts = ({
   hoursAtDest,
   numDirectors,
   numManagers,
-  numGeneralists
+  numGeneralists,
+  tripLegs = 1
 }) => {
   const totalEmployees = numDirectors + numManagers + numGeneralists;
 
@@ -31,8 +32,32 @@ const calculateTripCosts = ({
   const driveTotal =
     driveEmployeeTotal + driveDistanceCost + driveLodging;
 
-  const flyHoursKingAir =
-    flyMiles / FLYING_SPEED_MPH.kingAir;
+  const getFlightSegments = (miles, aircraftInfo) => {
+    const maxSegmentMiles = aircraftInfo.departure_distance + aircraftInfo.approach_distance;
+    if (miles <= maxSegmentMiles) {
+      const departureMiles = miles * (aircraftInfo.departure_distance / maxSegmentMiles);
+      const approachMiles = miles - departureMiles;
+      return {
+        departureMiles,
+        cruiseMiles: 0,
+        approachMiles
+      };
+    }
+    return {
+      departureMiles: aircraftInfo.departure_distance,
+      cruiseMiles: miles - maxSegmentMiles,
+      approachMiles: aircraftInfo.approach_distance
+    };
+  };
+
+  const legs = Math.max(1, tripLegs);
+  const oneWayFlyMiles = flyMiles / legs;
+  const kingAirSegments = getFlightSegments(oneWayFlyMiles, AIRCRAFT_INFO.kingAir);
+  const flyHoursKingAir = (
+    (kingAirSegments.departureMiles / AIRCRAFT_INFO.kingAir.departure_speed_mph) +
+    (kingAirSegments.cruiseMiles / AIRCRAFT_INFO.kingAir.cruise_speed_mph) +
+    (kingAirSegments.approachMiles / AIRCRAFT_INFO.kingAir.approach_speed_mph)
+  ) * legs;
   const flyDistanceCostKingAir =
     flyMiles * COST_PER_MILE.flyingKingAir;
   const flyNumDaysKingAir =
@@ -42,8 +67,12 @@ const calculateTripCosts = ({
   const flyTotalKingAir =
     flyDistanceCostKingAir + flyLodgingKingAir;
 
-  const flyHoursKodiak =
-    flyMiles / FLYING_SPEED_MPH.kodiak;
+  const kodiakSegments = getFlightSegments(oneWayFlyMiles, AIRCRAFT_INFO.kodiak);
+  const flyHoursKodiak = (
+    (kodiakSegments.departureMiles / AIRCRAFT_INFO.kodiak.departure_speed_mph) +
+    (kodiakSegments.cruiseMiles / AIRCRAFT_INFO.kodiak.cruise_speed_mph) +
+    (kodiakSegments.approachMiles / AIRCRAFT_INFO.kodiak.approach_speed_mph)
+  ) * legs;
   const flyDistanceCostKodiak =
     flyMiles * COST_PER_MILE.flyingKodiak;
   const flyNumDaysKodiak =

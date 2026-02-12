@@ -71,9 +71,25 @@ const renderBreakdownTable = (dom, data, trip, inputs) => {
   <tr><th colspan="3" class="table-section-header">Flying Costs - King Air</th></tr>
   <tr>
     <td>Travel Hours
-      ${tooltip(`Average travel time for ${trip.label}, in hours\n\nMileage is derived using total air miles with an average flight speed of ${FLYING_SPEED_MPH.kingAir} mph.`)}
+      ${tooltip(`Travel hours use segmented speeds: ${AIRCRAFT_INFO.kingAir.departure_speed_mph} mph for the first ${AIRCRAFT_INFO.kingAir.departure_distance} miles, ${AIRCRAFT_INFO.kingAir.cruise_speed_mph} mph for cruise, and ${AIRCRAFT_INFO.kingAir.approach_speed_mph} mph for the last ${AIRCRAFT_INFO.kingAir.approach_distance} miles. Short trips are proportionally weighted across departure and approach distances.`)}
     </td>
-    <td>${trip.flyMiles.toFixed(1)} total miles / ${FLYING_SPEED_MPH.kingAir} mph</td>
+    <td>${(() => {
+      const total = trip.flyMiles;
+      const legs = Math.max(1, trip.tripLegs || 1);
+      const oneWay = total / legs;
+      const maxSegment = AIRCRAFT_INFO.kingAir.departure_distance + AIRCRAFT_INFO.kingAir.approach_distance;
+      const depPerLeg = oneWay <= maxSegment
+        ? oneWay * (AIRCRAFT_INFO.kingAir.departure_distance / maxSegment)
+        : AIRCRAFT_INFO.kingAir.departure_distance;
+      const appPerLeg = oneWay <= maxSegment
+        ? oneWay - depPerLeg
+        : AIRCRAFT_INFO.kingAir.approach_distance;
+      const cruisePerLeg = oneWay <= maxSegment ? 0 : oneWay - maxSegment;
+      const depMiles = depPerLeg * legs;
+      const appMiles = appPerLeg * legs;
+      const cruiseMiles = cruisePerLeg * legs;
+      return `${total.toFixed(1)} total miles, ${depMiles.toFixed(1)} miles @ ${AIRCRAFT_INFO.kingAir.departure_speed_mph} mph + ${cruiseMiles.toFixed(1)} miles @ ${AIRCRAFT_INFO.kingAir.cruise_speed_mph} mph + ${appMiles.toFixed(1)} miles @ ${AIRCRAFT_INFO.kingAir.approach_speed_mph} mph`;
+    })()}</td>
     <td>${data.flyHoursKingAir.toFixed(2)} hrs</td>
   </tr>
   <tr>
@@ -98,9 +114,25 @@ const renderBreakdownTable = (dom, data, trip, inputs) => {
   <tr><th colspan="3" class="table-section-header">Flying Costs - Kodiak</th></tr>
   <tr>
     <td>Travel Hours
-      ${tooltip(`Average travel time for ${trip.label}, in hours\n\nMileage is derived using total air miles with an average flight speed of ${FLYING_SPEED_MPH.kodiak} mph.`)}
+      ${tooltip(`Travel hours use segmented speeds: ${AIRCRAFT_INFO.kodiak.departure_speed_mph} mph for the first ${AIRCRAFT_INFO.kodiak.departure_distance} miles, ${AIRCRAFT_INFO.kodiak.cruise_speed_mph} mph for cruise, and ${AIRCRAFT_INFO.kodiak.approach_speed_mph} mph for the last ${AIRCRAFT_INFO.kodiak.approach_distance} miles. Short trips are proportionally weighted across departure and approach distances.`)}
     </td>
-    <td>${trip.flyMiles.toFixed(1)} total miles / ${FLYING_SPEED_MPH.kodiak} mph</td>
+    <td>${(() => {
+      const total = trip.flyMiles;
+      const legs = Math.max(1, trip.tripLegs || 1);
+      const oneWay = total / legs;
+      const maxSegment = AIRCRAFT_INFO.kodiak.departure_distance + AIRCRAFT_INFO.kodiak.approach_distance;
+      const depPerLeg = oneWay <= maxSegment
+        ? oneWay * (AIRCRAFT_INFO.kodiak.departure_distance / maxSegment)
+        : AIRCRAFT_INFO.kodiak.departure_distance;
+      const appPerLeg = oneWay <= maxSegment
+        ? oneWay - depPerLeg
+        : AIRCRAFT_INFO.kodiak.approach_distance;
+      const cruisePerLeg = oneWay <= maxSegment ? 0 : oneWay - maxSegment;
+      const depMiles = depPerLeg * legs;
+      const appMiles = appPerLeg * legs;
+      const cruiseMiles = cruisePerLeg * legs;
+      return `${total.toFixed(1)} total miles, ${depMiles.toFixed(1)} miles @ ${AIRCRAFT_INFO.kodiak.departure_speed_mph} mph + ${cruiseMiles.toFixed(1)} miles @ ${AIRCRAFT_INFO.kodiak.cruise_speed_mph} mph + ${appMiles.toFixed(1)} miles @ ${AIRCRAFT_INFO.kodiak.approach_speed_mph} mph`;
+    })()}</td>
     <td>${data.flyHoursKodiak.toFixed(2)} hrs</td>
   </tr>
   <tr>
