@@ -72,6 +72,81 @@ const HOURS_ALLOWED_PER_DAY_FLYING = 12;
 const GENERALIST_PERCENTAGE = 0.05; // 5% of total personnel allocated as generalists
 //const ROUND_TRIP = true; // can be used to multiply distances/times
 
+const INVALID_PASSENGERS = [
+  'training, aeronautics',
+  'deadhead, miles',
+  'training, aeronau',
+  '',
+  ' ',
+  ''
+];
+const NAVAIDS_PASSENGERS = [
+  'kremer, nicholas', 
+  'canelon-lander, luis', 
+  'canelon-lander, l',
+  'kristensen, kris',
+  'dalton, john',
+  'williams, nathan',
+  'mccanney, jim',
+];
+
+const DIRECTORS_DATA = [
+  "nancy daubenberger",
+  "sara severs",
+  "karin van dyck",
+  "suzie thayer",
+  "cindy gross",
+  "josh knatterud-hubinger",
+  "sam brown",
+  "matt williams",
+  "laura roads",
+  "levi brown",
+  "jean wallace",
+  "jon solberg",
+  "erik rudeen",
+  "ryan gaug",
+  "trisha stefanski",
+  "torey hunkus",
+  "katie walker",
+  "amber dallman",
+  "sarah ghandour",
+  "philip schaffner",
+  "kristine elwood",
+  "ted schoenecker",
+  "jay owens",
+  "shane chatleain",
+  "michael beer",
+  "lynn clarkowski",
+  "ed lutgen",
+  "paul johns",
+  "marni karnowski",
+  "joe pignato",
+  "curt turgeon",
+  "tom styrbicki",
+  "bryan dodds",
+  "nicki bartelt",
+  "jeff perkins",
+  "duane hill",
+  "jt anderson",
+  "mike ginnaty",
+  "shiloh wahl",
+  "khani sahebjem",
+  "mark schoenfelder",
+  "greg ous",
+  "kelly brunkhorst",
+  "jed falgren",
+  "brian sorenson",
+  "brian kary",
+  "ellen anderson",
+  "sean skibbie",
+  "devin henry",
+  "seema desai",
+  "james cownie",
+  "peggy l flanagan",
+  "timothy walz",
+  "bob bennett",
+];
+
 // Export constants to window for use in other scripts
 window.ROLES = ROLES;
 window.COST_PER_MILE = COST_PER_MILE;
@@ -85,3 +160,6 @@ window.DRIVING_SPEED_MPH = DRIVING_SPEED_MPH;
 window.HOURS_ALLOWED_PER_DAY = HOURS_ALLOWED_PER_DAY;
 window.HOURS_ALLOWED_PER_DAY_FLYING = HOURS_ALLOWED_PER_DAY_FLYING;
 window.GENERALIST_PERCENTAGE = GENERALIST_PERCENTAGE;
+window.INVALID_PASSENGERS = INVALID_PASSENGERS;
+window.NAVAIDS_PASSENGERS = NAVAIDS_PASSENGERS;
+window.DIRECTORS_DATA = DIRECTORS_DATA;

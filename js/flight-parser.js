@@ -77,15 +77,12 @@ function parseCSV(csvText) {
   return rows;
 }
 
-// Invalid passenger types to filter
-const INVALID_PASSENGERS = ['miles', 'deadhead', 'training', 'aeronautics', 'deadhead, miles', 'training, aeronau', ''];
-const NAVAIDS_PASSENGERS = ['kremer, nicholas', 'canelon-lander, luis'];
-
 // Check if passenger is valid
 function isValidPassenger(name) {
   if (!name || typeof name !== 'string') return false;
   const nameLower = name.toLowerCase().trim();
-  return !INVALID_PASSENGERS.includes(nameLower) && nameLower.length > 0;
+  const invalidPassengers = window.INVALID_PASSENGERS || [];
+  return !invalidPassengers.includes(nameLower) && nameLower.length > 0;
 }
 
 // Extract passenger names from a row (uses PASSENGER 1 through PASSENGER 14, skips base PASSENGER to avoid duplication)
@@ -98,6 +95,8 @@ function extractPassengers(row) {
     const value = row[key] || '';
     if (isValidPassenger(value)) {
       passengers.push(value.trim());
+    } else {
+      // console.log(`Excluding invalid passenger "${value}" from row with origin ${row.origin} and destination ${row.destination}`); // Debug log for invalid passengers
     }
   }
   
@@ -117,6 +116,8 @@ function isSTPToSTP(origin, destination) {
 function cleanFlightLog(csvText) {
   const rows = parseCSV(csvText);
   const cleaned = [];
+  let skippedNoPassengers = 0;
+  let skippedNavaids = 0;
   
   for (const row of rows) {
     // Get origin and destination (look for common column names)
@@ -132,12 +133,16 @@ function cleanFlightLog(csvText) {
     // Extract valid passengers
     const passengers = extractPassengers(row);
     if (passengers.length === 0) {
+      skippedNoPassengers += 1;
+      // console.log("Skipping flight on " + dateStr + " from " + origin + " to " + destination + " due to no valid passengers."); // Debug log for flights with no valid passengers
       continue;
     }
 
-    console.log(passengers);
-    if (passengers.length === 1 && passengers.some(element => NAVAIDS_PASSENGERS.includes(element.toLowerCase().trim()))) {
-      console.log("Skipping NavAids flight with passengers: " + passengers.join(", ")); // Debug log for NavAids flights
+    //console.log(passengers);
+    const navaidsPassengers = window.NAVAIDS_PASSENGERS || [];
+    if (passengers.length === 1 && passengers.some(element => navaidsPassengers.includes(element.toLowerCase().trim()))) {
+      skippedNavaids += 1;
+      // console.log("Skipping NavAids flight on " + dateStr + " with passengers: " + passengers.join(", ")); // Debug log for NavAids flights
       continue; // Skips NavAids flights that only have the NAVAIDS passenger, as these are not real passengers but rather a code for certain types of flights.
     };
 
@@ -159,6 +164,11 @@ function cleanFlightLog(csvText) {
     });
   }
   
+  cleaned.stats = {
+    skippedNoPassengers,
+    skippedNavaids
+  };
+
   return cleaned;
 }
 

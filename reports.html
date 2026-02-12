@@ -7,214 +7,6 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" type="image/svg+xml" href="assets/icons/small_plane_top_view.svg">
   <link rel="apple-touch-icon" href="assets/icons/small_plane_top_view.svg">
-  <style>
-    .report-container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .report-section {
-      margin-bottom: 30px;
-    }
-
-    .report-section h2 {
-      color: var(--mndot-blue);
-      border-bottom: 2px solid var(--mndot-blue);
-      padding-bottom: 10px;
-      margin-bottom: 15px;
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .form-group label {
-      font-weight: 600;
-      color: #333;
-    }
-
-    .form-group input[type="file"],
-    .form-group input[type="date"] {
-      padding: 10px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius);
-      font-size: 14px;
-      font-family: inherit;
-    }
-
-    .date-range {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-
-    .date-range .form-group {
-      flex: 1;
-      min-width: 150px;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      padding: 12px 24px;
-      font-size: 14px;
-      border: none;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-
-    .btn-process {
-      background-color: var(--mndot-blue);
-      color: white;
-    }
-
-    .btn-process:hover {
-      background-color: #003f87;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-process:disabled {
-      background-color: var(--mndot-gray-light);
-      cursor: not-allowed;
-    }
-
-    .btn-download {
-      background-color: #28a745;
-      color: white;
-    }
-
-    .btn-download:hover {
-      background-color: #218838;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-download:disabled {
-      background-color: var(--mndot-gray-light);
-      cursor: not-allowed;
-    }
-
-    .status-message {
-      padding: 12px;
-      border-radius: var(--border-radius);
-      margin-bottom: 15px;
-      display: none;
-    }
-
-    .status-message.show {
-      display: block;
-    }
-
-    .status-message.success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .status-message.error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    .status-message.info {
-      background-color: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
-    }
-
-    .results-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    .results-table th,
-    .results-table td {
-      padding: 12px;
-      text-align: right;
-      border: 1px solid var(--border-color);
-    }
-
-    .results-table th {
-      background-color: var(--mndot-blue);
-      color: white;
-      font-weight: 600;
-    }
-
-    .results-table td:first-child,
-    .results-table th:first-child {
-      text-align: left;
-    }
-
-    .results-table tr:nth-child(even) {
-      background-color: var(--mndot-gray-lighter);
-    }
-
-    .results-table tr:hover {
-      background-color: #e8f0f7;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: var(--mndot-blue);
-    }
-
-    .spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid var(--mndot-gray-light);
-      border-top-color: var(--mndot-blue);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    @media (max-width: 768px) {
-      .report-container {
-        padding: 15px;
-      }
-
-      .date-range {
-        flex-direction: column;
-      }
-
-      .date-range .form-group {
-        min-width: 100%;
-      }
-
-      .button-group {
-        flex-direction: column;
-      }
-
-      button {
-        width: 100%;
-      }
-
-      .results-table {
-        font-size: 12px;
-      }
-
-      .results-table th,
-      .results-table td {
-        padding: 8px;
-      }
-    }
-  </style>
 </head>
 <body>
   <div class="report-container">
@@ -231,14 +23,18 @@
         <input type="file" id="csvFile" accept=".csv" required>
       </div>
 
-      <div class="date-range">
+      <div class="button-group report-filter-group">
+        <button type="button" class="btn-process" id="filterToggleBtn">Filter</button>
+      </div>
+
+      <div class="date-range report-filter-section" id="filterSection">
         <div class="form-group">
           <label for="startDate">Start Date</label>
-          <input type="date" id="startDate" required>
+          <input type="date" id="startDate">
         </div>
         <div class="form-group">
           <label for="endDate">End Date</label>
-          <input type="date" id="endDate" required>
+          <input type="date" id="endDate">
         </div>
       </div>
 
@@ -248,7 +44,7 @@
       </div>
     </div>
 
-    <div id="resultsSection" class="report-section" style="display: none;">
+    <div id="resultsSection" class="report-section is-hidden">
       <h2>Monthly Summary Report</h2>
       <div id="resultsContainer"></div>
     </div>
@@ -262,64 +58,6 @@
   <script src="js/flight-parser.js"></script>
   <script src="js/reports.js"></script>
   <script>
-    // Directors list embedded for local file access (no CORS issues)
-    const DIRECTORS_DATA = [
-      "nancy daubenberger",
-      "sara severs",
-      "karin van dyck",
-      "suzie thayer",
-      "cindy gross",
-      "josh knatterud-hubinger",
-      "sam brown",
-      "matt williams",
-      "laura roads",
-      "levi brown",
-      "jean wallace",
-      "jon solberg",
-      "erik rudeen",
-      "ryan gaug",
-      "trisha stefanski",
-      "torey hunkus",
-      "katie walker",
-      "amber dallman",
-      "sarah ghandour",
-      "philip schaffner",
-      "kristine elwood",
-      "ted schoenecker",
-      "jay owens",
-      "shane chatleain",
-      "michael beer",
-      "lynn clarkowski",
-      "ed lutgen",
-      "paul johns",
-      "marni karnowski",
-      "joe pignato",
-      "curt turgeon",
-      "tom styrbicki",
-      "bryan dodds",
-      "nicki bartelt",
-      "jeff perkins",
-      "duane hill",
-      "jt anderson",
-      "mike ginnaty",
-      "shiloh wahl",
-      "khani sahebjem",
-      "mark schoenfelder",
-      "greg ous",
-      "kelly brunkhorst",
-      "jed falgren",
-      "brian sorenson",
-      "brian kary",
-      "ellen anderson",
-      "sean skibbie",
-      "devin henry",
-      "seema desai",
-      "james cownie",
-      "peggy l flanagan",
-      "timothy walz",
-      "bob bennett",
-    ];
-
     let reportData = null;
     let directorsList = null;
     const statusEl = document.getElementById('statusMessage');
@@ -330,9 +68,15 @@
     const csvFileInput = document.getElementById('csvFile');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
+    const filterToggleBtn = document.getElementById('filterToggleBtn');
+    const filterSection = document.getElementById('filterSection');
+
+    filterToggleBtn.addEventListener('click', () => {
+      filterSection.classList.toggle('is-open');
+    });
 
     // Initialize directors list
-    directorsList = DIRECTORS_DATA;
+    directorsList = window.DIRECTORS_DATA || [];
     //showStatus('Directors list loaded', 'info'); //debug
 
     function showStatus(msg, type) {
@@ -352,7 +96,7 @@
       for (const month of months) {
         html += `<th>${month}</th>`;
       }
-      html += '<th style="font-weight: bold;">Totals</th></tr></thead><tbody>';
+      html += '<th class="results-table__totals">Totals</th></tr></thead><tbody>';
 
       const metrics = [
         { key: 'directors', label: 'Number of Directors' },
@@ -386,7 +130,7 @@
         } else if (metric.key.includes('Miles')) {
           totalDisplay = Math.round(rowTotal).toLocaleString();
         }
-        html += `<td style="font-weight: bold; background-color: #f0f0f0;">${totalDisplay}</td>`;
+        html += `<td class="results-table__totals-cell">${totalDisplay}</td>`;
         html += '</tr>';
       }
 
@@ -396,23 +140,18 @@
 
     function displayErrors(errors) {
       const errorContainer = document.createElement('div');
-      errorContainer.style.marginTop = '20px';
-      errorContainer.style.padding = '15px';
-      errorContainer.style.backgroundColor = '#fff3cd';
-      errorContainer.style.border = '1px solid #ffc107';
-      errorContainer.style.borderRadius = 'var(--border-radius)';
+      errorContainer.className = 'report-errors';
       
       const errorTitle = document.createElement('h3');
+      errorTitle.className = 'report-errors__title';
       errorTitle.textContent = `⚠️ ${errors.length} Flight(s) Skipped`;
-      errorTitle.style.marginTop = '0';
-      errorTitle.style.color = '#856404';
       
       const errorList = document.createElement('ul');
-      errorList.style.marginBottom = '0';
+      errorList.className = 'report-errors__list';
       for (const error of errors) {
         const li = document.createElement('li');
+        li.className = 'report-errors__item';
         li.textContent = error;
-        li.style.color = '#856404';
         errorList.appendChild(li);
       }
       
@@ -424,18 +163,27 @@
     function renderDetailedFlights(flights) {
       if (!flights || flights.length === 0) return;
 
+      const sortedFlights = [...flights].sort((a, b) => {
+        const aDate = new Date(a.date);
+        const bDate = new Date(b.date);
+        return aDate - bDate;
+      });
+
       const detailsSection = document.createElement('div');
-      detailsSection.style.marginTop = '40px';
+      detailsSection.className = 'report-details';
       
       const title = document.createElement('h2');
+      title.className = 'report-details__title';
       title.textContent = 'Detailed Flight Breakdown';
-      title.style.color = 'var(--mndot-blue)';
-      title.style.borderBottom = '2px solid var(--mndot-blue)';
-      title.style.paddingBottom = '10px';
-      title.style.marginBottom = '15px';
       detailsSection.appendChild(title);
 
-      let html = '<table class="results-table" style="margin-bottom: 20px;"><thead><tr>' +
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'btn-process report-details__toggle';
+      toggleBtn.textContent = 'Show Detailed Flight Breakdown';
+      detailsSection.appendChild(toggleBtn);
+
+      let html = '<table class="results-table results-table--detailed"><thead><tr>' +
         '<th>Date</th>' +
         '<th>Aircraft</th>' +
         '<th>Departure</th>' +
@@ -449,10 +197,10 @@
         '<th>Cost Savings</th>' +
         '</tr></thead><tbody>';
 
-      for (const flight of flights) {
+      for (const flight of sortedFlights) {
         const aircraftType = window.CostCalculator.detectAircraftType(flight.tail) === 'kingAir' ? 'King Air' : 'Kodiak';
-        const directors = flight.classified.directors.join(', ') || '—';
-        const managers = flight.classified.managers.join(', ') || '—';
+        const directors = flight.classified.directors.join('\n') || '—';
+        const managers = flight.classified.managers.join('\n') || '—';
         
         html += '<tr>' +
           `<td>${flight.dateStr}</td>` +
@@ -473,7 +221,16 @@
       
       const table = document.createElement('div');
       table.innerHTML = html;
+      table.className = 'report-details__table';
       detailsSection.appendChild(table);
+
+      toggleBtn.addEventListener('click', () => {
+        const isHidden = !table.classList.contains('is-open');
+        table.classList.toggle('is-open');
+        toggleBtn.textContent = isHidden
+          ? 'Hide Detailed Flight Breakdown'
+          : 'Show Detailed Flight Breakdown';
+      });
       resultsContainer.appendChild(detailsSection);
     }
 
@@ -483,20 +240,17 @@
         return;
       }
 
-      if (!startDateInput.value || !endDateInput.value) {
-        showStatus('Please select both start and end dates', 'error');
-        return;
-      }
-
       if (!directorsList) {
         showStatus('Directors list not loaded. Please refresh the page.', 'error');
         return;
       }
 
-      const startDate = new Date(startDateInput.value);
-      const endDate = new Date(endDateInput.value);
+      const hasStartDate = Boolean(startDateInput.value);
+      const hasEndDate = Boolean(endDateInput.value);
+      const startDate = hasStartDate ? new Date(startDateInput.value) : null;
+      const endDate = hasEndDate ? new Date(endDateInput.value) : null;
 
-      if (startDate > endDate) {
+      if (hasStartDate && hasEndDate && startDate > endDate) {
         showStatus('Start date must be before end date', 'error');
         return;
       }
@@ -514,6 +268,8 @@
           
           // Parse and clean flight log
           const cleanedFlights = window.FlightParser.cleanFlightLog(csvText);
+          const skippedNoPassengers = cleanedFlights.stats?.skippedNoPassengers || 0;
+          const skippedNavaids = cleanedFlights.stats?.skippedNavaids || 0;
           
           if (cleanedFlights.length === 0) {
             showStatus('No valid flights found in the uploaded file', 'error');
@@ -523,8 +279,11 @@
 
           // Filter by date range
           const filteredFlights = cleanedFlights.filter(f => {
+            if (!hasStartDate && !hasEndDate) return true;
             const flightDate = new Date(f.date);
-            return flightDate >= startDate && flightDate <= endDate;
+            if (hasStartDate && flightDate < startDate) return false;
+            if (hasEndDate && flightDate > endDate) return false;
+            return true;
           });
 
           if (filteredFlights.length === 0) {
@@ -548,27 +307,30 @@
           // Generate CSV
           const csv = window.FlightReports.generateReportCSV(
             monthlyData,
-            startDateInput.value,
-            endDateInput.value
+            startDateInput.value || 'all',
+            endDateInput.value || 'all'
           );
 
           // Store for download
           reportData = {
             csv,
-            startDate: startDateInput.value,
-            endDate: endDateInput.value,
+            startDate: startDateInput.value || 'all',
+            endDate: endDateInput.value || 'all',
             monthlyData
           };
 
           // Display results
           renderTable(monthlyData);
           renderDetailedFlights(processedFlights);
-          resultsSection.style.display = 'block';
+          resultsSection.classList.remove('is-hidden');
           downloadBtn.disabled = false;
           
           let successMsg = `Report generated successfully from ${processedFlights.length} flights`;
           if (errors.length > 0) {
             successMsg += ` (${errors.length} flights skipped due to errors)`;
+          }
+          if (skippedNoPassengers > 0 || skippedNavaids > 0) {
+            successMsg += ` — Skipped ${skippedNoPassengers} with no passengers, ${skippedNavaids} Navaids flights`;
           }
           showStatus(successMsg, 'success');
           
@@ -609,9 +371,7 @@
       URL.revokeObjectURL(url);
     });
 
-    // Set default dates for testing
-    startDateInput.value = '2020-01-01';
-    endDateInput.value = new Date().toISOString().split('T')[0];
+    // Dates are optional; when omitted all flights are included.
   </script>
 </body>
 </html>

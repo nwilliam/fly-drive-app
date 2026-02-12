@@ -41,7 +41,7 @@ function aggregateByMonth(flights) {
     const generalistCount = Math.ceil(totalPeople * window.GENERALIST_PERCENTAGE);
     month.generalists = generalistCount;
     month.managers = Math.max(0, totalPeople - month.directors - generalistCount);
-    // Calculate savings: positive = driving is cheaper, negative = flying is cheaper
+    // Calculate savings: positive means flying is cheaper, negative means driving is cheaper
     month.savings = month.totalCostDrive - month.totalCostFly;
   }
   
@@ -116,15 +116,15 @@ function generateReportCSV(monthlyData, dateRangeStart, dateRangeEnd) {
   
   // CSV rows
   const rows = [
-    ['Metric', ...months],
-    ['Number of Directors', ...monthlyData.map(m => m.directors)],
-    ['Number of Managers', ...monthlyData.map(m => m.managers)],
-    ['Number of Generalists', ...monthlyData.map(m => m.generalists)],
-    ['Total Miles Flown', ...monthlyData.map(m => Math.round(m.totalMilesFly))],
-    ['Total Miles if Driven', ...monthlyData.map(m => Math.round(m.totalMilesDrive))],
-    ['Total Cost of Driving', ...monthlyData.map(m => Math.round(m.totalCostDrive))],
-    ['Total Cost of Flying', ...monthlyData.map(m => Math.round(m.totalCostFly))],
-    ['Savings (Driving - Flying)', ...monthlyData.map(m => Math.round(m.totalCostDrive - m.totalCostFly))]
+    ['Metric', ...months, 'Total'],
+    ['Number of Directors', ...monthlyData.map(m => m.directors), monthlyData.reduce((sum, m) => sum + m.directors, 0)],
+    ['Number of Managers', ...monthlyData.map(m => m.managers), monthlyData.reduce((sum, m) => sum + m.managers, 0)],
+    ['Number of Generalists', ...monthlyData.map(m => m.generalists), monthlyData.reduce((sum, m) => sum + m.generalists, 0)],
+    ['Total Miles Flown', ...monthlyData.map(m => Math.round(m.totalMilesFly)), monthlyData.reduce((sum, m) => sum + m.totalMilesFly, 0)],
+    ['Total Miles if Driven', ...monthlyData.map(m => Math.round(m.totalMilesDrive)), monthlyData.reduce((sum, m) => sum + m.totalMilesDrive, 0)],
+    ['Total Cost of Driving', ...monthlyData.map(m => Math.round(m.totalCostDrive)), monthlyData.reduce((sum, m) => sum + m.totalCostDrive, 0)],
+    ['Total Cost of Flying', ...monthlyData.map(m => Math.round(m.totalCostFly)), monthlyData.reduce((sum, m) => sum + m.totalCostFly, 0)],
+    ['Savings (Driving - Flying)', ...monthlyData.map(m => Math.round(m.totalCostDrive - m.totalCostFly)), monthlyData.reduce((sum, m) => sum + (m.totalCostDrive - m.totalCostFly), 0)]
   ];
   
   return rows.map(row => row.join(',')).join('\n');

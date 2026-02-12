@@ -139,64 +139,55 @@ function calculateAndRender() {
 
   const totalEmployees = numDirectors + numManagers + numGeneralists;
 
-  // Employee cost per hour for driving only
-  const costDirectors =
-    numDirectors * ROLES.directors.hourlyRate * ROLES.directors.prcFactor;
-  const costManagers =
-    numManagers * ROLES.managers.hourlyRate * ROLES.managers.prcFactor;
-  const costGeneralists =
-    numGeneralists * ROLES.generalists.hourlyRate * ROLES.generalists.prcFactor;
-  const totalEmployeeCostPerHour =
-    costDirectors + costManagers + costGeneralists;
+  const employeeCostPerHour = window.CostCalculator.calculateEmployeeCostPerHour({
+    numDirectors,
+    numManagers,
+    numGeneralists
+  });
+  const costDirectors = employeeCostPerHour.directors;
+  const costManagers = employeeCostPerHour.managers;
+  const costGeneralists = employeeCostPerHour.generalists;
+  const totalEmployeeCostPerHour = employeeCostPerHour.total;
 
   // Driving
-  const driveHours =
-    selectedAirport1.drivingFromKSTP / DRIVING_SPEED_MPH * (roundTrip ? 2 : 1);
-  const carsNeeded =
-    Math.ceil(totalEmployees / VEHICLE_CAPACITY);
-  const driveDistanceCost =
-    selectedAirport1.drivingFromKSTP * COST_PER_MILE.driving * (roundTrip ? 2 : 1) * carsNeeded;
-  const numDays =
-    Math.floor((driveHours + hoursAtDest) / HOURS_ALLOWED_PER_DAY);
-  const driveLodging =
-    totalEmployees * ACCOMMODATIONS_PER_PERSON * numDays;
-  const driveEmployeeTotal =
-    totalEmployeeCostPerHour * driveHours;
-  const driveTotal =
-    driveEmployeeTotal + driveDistanceCost + driveLodging;
+  const driveCost = window.CostCalculator.calculateDriveCost({
+    drivingMiles: selectedAirport1.drivingFromKSTP,
+    numDirectors,
+    numManagers,
+    numGeneralists,
+    hoursAtDestination: hoursAtDest,
+    roundTrip
+  });
+  const driveHours = driveCost.hours;
+  const carsNeeded = driveCost.carsNeeded;
+  const driveDistanceCost = driveCost.distanceCost;
+  const numDays = driveCost.numDays;
+  const driveLodging = driveCost.lodging;
+  const driveEmployeeTotal = driveCost.employeeCost;
+  const driveTotal = driveCost.total;
 
   // Flying - King Air
   // Commented code uses a more complex calculation of flight hours based on different speeds for different phases of flight, but I have simplified to just use an average speed for now.
   /* const flyHoursKingAir =
     selectedAirport1.flyingFromKSTP / FLYING_SPEED_MPH.kingAir * (ROUND_TRIP ? 2 : 1); //+ (ROUND_TRIP ? .4 : .3); */
   
-  const cruiseMilesKingAir = Math.round(Math.max(0, selectedAirport1.flyingFromKSTP - AIRCRAFT_INFO.kingAir.departure_distance - AIRCRAFT_INFO.kingAir.approach_distance));
-  // If cruiseMiles are 0, then we have a very short flight. We need to break up departure/approach proportionally to their defined distances. Otherwise, we can just calculate hours normally.
-  let departureMilesKingAir, approachMilesKingAir = 0;
-
-  if (cruiseMilesKingAir === 0) {
-    departureMilesKingAir = Math.round(selectedAirport1.flyingFromKSTP * (AIRCRAFT_INFO.kingAir.departure_distance / (AIRCRAFT_INFO.kingAir.departure_distance + AIRCRAFT_INFO.kingAir.approach_distance)));
-    approachMilesKingAir = Math.round(selectedAirport1.flyingFromKSTP - departureMilesKingAir)
-  } else {
-    departureMilesKingAir = AIRCRAFT_INFO.kingAir.departure_distance;
-    approachMilesKingAir = AIRCRAFT_INFO.kingAir.approach_distance;
-  }
-
-  const flyHoursKingAir =
-    ((departureMilesKingAir / AIRCRAFT_INFO.kingAir.departure_speed_mph) +
-    (approachMilesKingAir / AIRCRAFT_INFO.kingAir.approach_speed_mph) +
-    cruiseMilesKingAir / AIRCRAFT_INFO.kingAir.cruise_speed_mph) *
-    (roundTrip ? 2 : 1);
-   
-  
-  const flyDistanceCostKingAir =
-    selectedAirport1.flyingFromKSTP * COST_PER_MILE.flyingKingAir * (roundTrip ? 2 : 1);
-  const flyNumDaysKingAir =
-    Math.floor((flyHoursKingAir + hoursAtDest) / HOURS_ALLOWED_PER_DAY_FLYING);
-  const flyLodgingKingAir =
-    (totalEmployees + 2) * (ACCOMMODATIONS_PER_PERSON) * flyNumDaysKingAir; //technically we could just send the plane home. if(hoursAtDest > X) flyDistanceCostKingAir*=2
-  const flyTotalKingAir =
-    flyDistanceCostKingAir + flyLodgingKingAir;
+  const flyCostKingAir = window.CostCalculator.calculateFlyCostDetailed({
+    flyingMiles: selectedAirport1.flyingFromKSTP,
+    numDirectors,
+    numManagers,
+    numGeneralists,
+    hoursAtDestination: hoursAtDest,
+    roundTrip,
+    aircraftType: 'kingAir'
+  });
+  const cruiseMilesKingAir = flyCostKingAir.segments.cruiseMiles;
+  const departureMilesKingAir = flyCostKingAir.segments.departureMiles;
+  const approachMilesKingAir = flyCostKingAir.segments.approachMiles;
+  const flyHoursKingAir = flyCostKingAir.hours;
+  const flyDistanceCostKingAir = flyCostKingAir.distanceCost;
+  const flyNumDaysKingAir = flyCostKingAir.numDays;
+  const flyLodgingKingAir = flyCostKingAir.lodging;
+  const flyTotalKingAir = flyCostKingAir.total;
 
   // Flying - Kodiak
   // Commented code uses a more complex calculation of flight hours based on different speeds for different phases of flight, but I have simplified to just use an average speed for now.
@@ -204,30 +195,23 @@ function calculateAndRender() {
     selectedAirport1.flyingFromKSTP / FLYING_SPEED_MPH.kodiak * (ROUND_TRIP ? 2 : 1); */
   
   
-  let departureMilesKodiak, approachMilesKodiak = 0;
-  const cruiseMilesKodiak = Math.round(Math.max(0, selectedAirport1.flyingFromKSTP - AIRCRAFT_INFO.kodiak.departure_distance - AIRCRAFT_INFO.kodiak.approach_distance));
-  
-  if (cruiseMilesKodiak === 0) {
-    departureMilesKodiak = Math.round(selectedAirport1.flyingFromKSTP * (AIRCRAFT_INFO.kodiak.departure_distance / (AIRCRAFT_INFO.kodiak.departure_distance + AIRCRAFT_INFO.kodiak.approach_distance)));
-    approachMilesKodiak = Math.round(selectedAirport1.flyingFromKSTP - departureMilesKodiak);
-  } else {
-    departureMilesKodiak = AIRCRAFT_INFO.kodiak.departure_distance;
-    approachMilesKodiak = AIRCRAFT_INFO.kodiak.approach_distance;
-  }
-  const flyHoursKodiak =
-    ((departureMilesKodiak / AIRCRAFT_INFO.kodiak.departure_speed_mph) +
-    (approachMilesKodiak / AIRCRAFT_INFO.kodiak.approach_speed_mph) +
-    cruiseMilesKodiak / AIRCRAFT_INFO.kodiak.cruise_speed_mph) *
-    (roundTrip ? 2 : 1);  
-
-  const flyDistanceCostKodiak =
-    selectedAirport1.flyingFromKSTP * COST_PER_MILE.flyingKodiak * (roundTrip ? 2 : 1);
-  const flyNumDaysKodiak =
-    Math.floor((flyHoursKodiak + hoursAtDest) / HOURS_ALLOWED_PER_DAY_FLYING);
-  const flyLodgingKodiak =
-    (totalEmployees + 2) * (ACCOMMODATIONS_PER_PERSON) * flyNumDaysKodiak; //technically we could just send the plane home. if(hoursAtDest > X) flyDistanceCostKingAir*=2
-  const flyTotalKodiak =
-    flyDistanceCostKodiak + flyLodgingKodiak;
+  const flyCostKodiak = window.CostCalculator.calculateFlyCostDetailed({
+    flyingMiles: selectedAirport1.flyingFromKSTP,
+    numDirectors,
+    numManagers,
+    numGeneralists,
+    hoursAtDestination: hoursAtDest,
+    roundTrip,
+    aircraftType: 'kodiak'
+  });
+  const cruiseMilesKodiak = flyCostKodiak.segments.cruiseMiles;
+  const departureMilesKodiak = flyCostKodiak.segments.departureMiles;
+  const approachMilesKodiak = flyCostKodiak.segments.approachMiles;
+  const flyHoursKodiak = flyCostKodiak.hours;
+  const flyDistanceCostKodiak = flyCostKodiak.distanceCost;
+  const flyNumDaysKodiak = flyCostKodiak.numDays;
+  const flyLodgingKodiak = flyCostKodiak.lodging;
+  const flyTotalKodiak = flyCostKodiak.total;
 
   // Update Totals and set card texts
   setText("drive-cost-label", `Total ${roundTrip ? "Round-Trip" : "One-Way"} Cost`);
