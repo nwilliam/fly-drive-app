@@ -53,10 +53,419 @@
   <script src="js/constants.js"></script>
   <script src="js/airports.js"></script>
   <script src="js/distance-calc.js"></script>
-  <script src="js/passenger-classifier.js"></script>
   <script src="js/cost-calculator.js"></script>
-  <script src="js/flight-parser.js"></script>
-  <script src="js/reports.js"></script>
+  <script>
+    // ===== passenger-classifier.js =====
+    /**
+     * Passenger classification based on role
+     * Uses exact lowercase matching against directors.json
+     * Unclassified → Managers; 5% rounded up → Generalists
+     */
+
+    // Simple string similarity for fuzzy matching (Levenshtein distance)
+    function levenshteinDistance(a, b) {
+      const aLower = a.toLowerCase().trim();
+      const bLower = b.toLowerCase().trim();
+      const matrix = Array(bLower.length + 1).fill(null).map(() => Array(aLower.length + 1).fill(0));
+
+      for (let i = 0; i <= aLower.length; i++) matrix[0][i] = i;
+      for (let j = 0; j <= bLower.length; j++) matrix[j][0] = j;
+
+      for (let j = 1; j <= bLower.length; j++) {
+        for (let i = 1; i <= aLower.length; i++) {
+          const indicator = aLower[i - 1] === bLower[j - 1] ? 0 : 1;
+          matrix[j][i] = Math.min(
+            matrix[j][i - 1] + 1,
+            matrix[j - 1][i] + 1,
+            matrix[j - 1][i - 1] + indicator
+          );
+        }
+      }
+      return matrix[bLower.length][aLower.length];
+    }
+
+    // Normalize name by converting "LAST, FIRST" to "FIRST LAST" and removing extra spaces
+    function normalizeName(name) {
+      if (!name || typeof name !== 'string') return '';
+
+      let normalized = name.toLowerCase().trim();
+
+      // Convert "LAST, FIRST" format to "FIRST LAST" format
+      if (normalized.includes(',')) {
+        const parts = normalized.split(',').map(p => p.trim());
+        if (parts.length === 2) {
+          normalized = `${parts[1]} ${parts[0]}`;
+        }
+      }
+
+      // Clean up extra spaces
+      normalized = normalized.replace(/\s+/g, ' ').trim();
+      return normalized;
+    }
+
+    // Fuzzy match passenger name against directors list
+    // Returns "director" if match found, null otherwise
+    function classifyPassenger(name, directorsList) {
+      const nameLower = normalizeName(name);
+      if (!nameLower) return null;
+
+      // Exact match
+      if (directorsList.includes(nameLower)) {
+        return "director";
+      }
+
+      // Fuzzy match with threshold (distance <= 2)
+      for (const director of directorsList) {
+        const distance = levenshteinDistance(nameLower, director);
+        if (distance <= 2) {
+          return "director";
+        }
+      }
+
+      return null; // Unclassified → will become manager
+    }
+
+    // Process passenger manifest and assign roles (generalist allocation happens at month level)
+    function classifyPassengers(passengerNames, directorsList) {
+      const classified = {
+        directors: [],
+        managers: [],
+        generalists: []
+      };
+
+      // Classify each passenger as director or manager
+      for (const name of passengerNames) {
+        if (!name || typeof name !== 'string' || !name.trim()) continue;
+
+        const role = classifyPassenger(name, directorsList);
+        if (role === "director") {
+          classified.directors.push(name);
+        } else {
+          classified.managers.push(name);
+        }
+      }
+
+      // Note: Generalist allocation is done at the month aggregation level, not per flight
+      return classified;
+    }
+
+    // ===== flight-parser.js =====
+    /**
+     * Flight CSV parser and data cleaner
+     * Removes invalid passengers and STP-to-STP legs
+     */
+
+    // Parse CSV text into rows, handling unquoted names with commas
+    function parseCSV(csvText) {
+      const lines = csvText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+      // Find the actual header row (contains 'TAIL#' or 'TAIL'). PFM likes to change this up on the export.
+      let headerIdx = 0;
+      for (let i = 0; i < Math.min(5, lines.length); i++) {
+        if (lines[i].toLowerCase().includes('tail')) {
+          headerIdx = i;
+          break;
+        }
+      }
+
+      const headerLine = lines[headerIdx];
+      const header = headerLine.split(',').map(h => h.trim().toLowerCase());
+
+      const rows = [];
+      for (let i = headerIdx + 1; i < lines.length; i++) {
+        const line = lines[i];
+
+        // Split by comma, but handle quoted fields
+        let values = [];
+        let current = '';
+        let inQuotes = false;
+        for (let j = 0; j < line.length; j++) {
+          const char = line[j];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        values.push(current.trim());
+
+        // PFM is incredibly stupid and creates a CSV that includes uncounted strings like GAUG, RYAN which means they
+        // parse into two separate columns. So we do do this. Reconstruct passenger names that were split by commas (LAST, FIRST → LAST, FIRST)
+        const rebuiltValues = [];
+        for (let j = 0; j < values.length; j++) {
+          const val = values[j];
+          const key = header[j] || '';
+
+          // Check if this is a passenger column and the next value looks like it's part of the name
+          // Christ this is messy, but PFM is drunk in the way it outputs stuff. At least I'm not trying to parse a PDF
+          if (key.includes('passenger') && val && j + 1 < values.length) {
+            const nextVal = values[j + 1];
+            // If the current value has no space and the next value doesn't look like a column header
+            // and the current value doesn't start with a space, it might be a split name
+            // I had AI write the regex for me. Srynotsry.
+            if (!val.includes(' ') && nextVal && !nextVal.match(/^[A-Z0-9\s]+$/i)) {
+              // Check if this looks like LAST, FIRST format by seeing if next column
+              // could be reconstructed as a name
+              const potentialName = `${val}, ${nextVal}`;
+              // Only merge if it looks like a real name (has at least one letter and a comma)
+              if (potentialName.match(/[A-Z],\s*[A-Z]/i)) {
+                rebuiltValues.push(potentialName);
+                rebuiltValues.push(''); // Skip the next value since we merged it
+                j++; // Skip the next iteration
+                continue;
+              }
+            }
+          }
+          rebuiltValues.push(val);
+        }
+
+        const row = {};
+        header.forEach((key, idx) => {
+          row[key] = rebuiltValues[idx] || '';
+        });
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    // Check if passenger is valid. There's some garbage that PFM likes to put in there, and some people we don't want to
+    // count, such as "DEADHEAD, MILES" (yeah that's a thing.) So we exclude them here. I realize I should likely rename
+    // this function to something like isUsefulPassenger or something, as Valid has some implications. Whoops.
+    function isValidPassenger(name) {
+      if (!name || typeof name !== 'string') return false;
+      const nameLower = name.toLowerCase().trim();
+      const invalidPassengers = window.INVALID_PASSENGERS || [];
+      return !invalidPassengers.includes(nameLower) && nameLower.length > 0;
+    }
+
+    // PFM does some stupid stuff. It has a "LEAD PASSENGER" column, but because its stupid it sometimes has two header
+    // rows and "Lead" is in row 1 and "Passenger" is in row 2, so the headers look like "PASSENGER, PASSENGER 1" when
+    // in fact its "LEAD PASSENGER" and "PASSENGER 1". So we get duplicate passengers! Yay. Lets exclude them here by
+    // dumping the non-numbered passenger column. I could just say "Ignore the first passenger column" but I don't trust
+    // PFM not to change something randomly, so we're going to match the number. This is how I live my life, people.
+    function extractPassengers(row) {
+      const passengers = [];
+
+      // Only extract numbered passenger columns (PASSENGER 1-14) to avoid duplication with PASSENGER column
+      for (let i = 1; i <= 14; i++) {
+        const key = `passenger ${i}`;
+        const value = row[key] || '';
+        if (isValidPassenger(value)) {
+          passengers.push(value.trim());
+        }
+      }
+
+      return passengers;
+    }
+
+    // Check if leg is STP-to-STP (same origin and destination)
+    // These dumps any training legs that go STP->STP which don't count for Fly-Drive.
+    function isSTPToSTP(origin, destination) {
+      const origNorm = (origin || '').toUpperCase().trim();
+      const destNorm = (destination || '').toUpperCase().trim();
+      const isSTP = (code) => ['KSTP', 'STP', 'MSP'].includes(code);
+
+      return isSTP(origNorm) && isSTP(destNorm);
+    }
+
+    // Parse and clean flight log
+    // Yeah. Clean. Get rid of all of PFMs crap, get rid of legs we don't care about, and figure out through this mess
+    // exactly what passengers we have. Exclude garbage.
+    function cleanFlightLog(csvText) {
+      const rows = parseCSV(csvText);
+      const cleaned = [];
+      let skippedNoPassengers = 0;
+      let skippedNavaids = 0;
+
+      for (const row of rows) {
+        // Get origin and destination (look for common column names)
+        const origin = row.origin || row.departure || row.dep || '';
+        const destination = row.destination || row.arrival || row.arr || '';
+        const dateStr = row.date || row['date'] || '';
+
+        // Skip STP-to-STP legs
+        if (isSTPToSTP(origin, destination)) {
+          continue;
+        }
+
+        // Extract valid passengers
+        const passengers = extractPassengers(row);
+        if (passengers.length === 0) {
+          skippedNoPassengers += 1;
+          continue;
+        }
+
+        // Skip NavAids flights that only have one navaids person. We don't apply these towards our "greater MnDOT"
+        // calculation because Aero uses the Kodiaks essentially as work trucks. While it may only have one person, it
+        // likely has a bunch of cargo and is being used for critical infrastructure, so we won't count it here.
+        const navaidsPassengers = window.NAVAIDS_PASSENGERS || [];
+        if (passengers.length === 1 && passengers.some(element => navaidsPassengers.includes(element.toLowerCase().trim()))) {
+          skippedNavaids += 1;
+          continue;
+        }
+
+        // We've gotten rid of all the mess, now we add it into a useful data format! My GOD that was a lot of work!
+        cleaned.push({
+          date: new Date(dateStr),
+          dateStr: dateStr,
+          origin: origin.toUpperCase().trim(),
+          destination: destination.toUpperCase().trim(),
+          flightTime: parseFloat(row['flight time'] || row.flight_time || 0) || 0,
+          blockTime: parseFloat(row['block time'] || row.block_time || 0) || 0,
+          miles: parseFloat(row.miles || 0) || 0,
+          passengers: passengers,
+          passengerCount: passengers.length,
+          tail: row['tail#'] || row.tail || '',
+          leg: row['leg#'] || row.leg || '',
+          purpose: row.purpose || '',
+          raw: row
+        });
+      }
+
+      cleaned.stats = {
+        skippedNoPassengers,
+        skippedNavaids
+      };
+
+      return cleaned;
+    }
+
+    // ===== reports.js =====
+
+    // Aggregate flight data by month and allocate 5% as generalists. In general this is historically what we've flown
+    // and there's no way for me to figure out positions from the passenger manifest without some real shenanigans.
+    function aggregateByMonth(flights) {
+      const monthMap = {};
+
+      for (const flight of flights) {
+        const date = new Date(flight.date);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+        if (!monthMap[monthKey]) {
+          monthMap[monthKey] = {
+            month: monthKey,
+            directors: 0,
+            managers: 0,
+            totalMilesFly: 0,
+            totalMilesDrive: 0,
+            totalCostDrive: 0,
+            totalCostFly: 0,
+            flightCount: 0
+          };
+        }
+
+        const month = monthMap[monthKey];
+        month.directors += flight.classified.directors.length;
+        month.managers += flight.classified.managers.length;
+        month.totalMilesFly += flight.flyDistance || 0;
+        month.totalMilesDrive += flight.driveDistance || 0;
+        month.totalCostDrive += flight.costDrive.total || 0;
+        month.totalCostFly += flight.costFly.total || 0;
+        month.flightCount += 1;
+      }
+
+
+      const result = Object.values(monthMap);
+      for (const month of result) {
+        // Calculate generalists as configured percentage of total personnel per month
+        const totalPeople = month.directors + month.managers;
+        const generalistCount = Math.ceil(totalPeople * window.GENERALIST_PERCENTAGE);
+        month.generalists = generalistCount;
+        month.managers = Math.max(0, totalPeople - month.directors - generalistCount);
+
+        // Calculate savings: positive means flying is cheaper, negative means driving is cheaper
+        month.savings = month.totalCostDrive - month.totalCostFly;
+      }
+
+      return result.sort((a, b) => a.month.localeCompare(b.month));
+    }
+
+    // Process flight and calculate costs
+    async function processFlightLeg(flight, directorsList) {
+      try {
+        // Classify passengers
+        const classified = classifyPassengers(flight.passengers, directorsList);
+
+        // Calculate distances
+        const flyDistance = window.DistanceCalc.getFlyingDistance(flight.origin, flight.destination);
+        const driveDistance = window.DistanceCalc.getDrivingDistance(flight.origin, flight.destination);
+
+        // Calculate costs
+        const costDrive = window.CostCalculator.calculateDriveCost({
+          drivingMiles: driveDistance,
+          numDirectors: classified.directors.length,
+          numManagers: classified.managers.length,
+          numGeneralists: classified.generalists.length,
+          hoursAtDestination: 0
+        });
+
+        const costFly = window.CostCalculator.calculateFlyCostByTail({
+          flyingMiles: flyDistance,
+          numDirectors: classified.directors.length,
+          numManagers: classified.managers.length,
+          numGeneralists: classified.generalists.length,
+          hoursAtDestination: 0,
+          tailNumber: flight.tail
+        });
+
+        return {
+          success: true,
+          ...flight,
+          classified,
+          flyDistance,
+          driveDistance,
+          costDrive,
+          costFly,
+          savings: costDrive.total - costFly.total
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: `${flight.dateStr} ${flight.origin}-${flight.destination}: ${error.message}`,
+          ...flight
+        };
+      }
+    }
+
+    // Process all flights
+    async function processAllFlights(cleanedFlights, directorsList) {
+      const processed = [];
+      const errors = [];
+      for (const flight of cleanedFlights) {
+        const result = await processFlightLeg(flight, directorsList);
+        if (result.success) {
+          processed.push(result);
+        } else {
+          errors.push(result.error);
+        }
+      }
+      return { flights: processed, errors };
+    }
+
+    // Generate output CSV
+    function generateReportCSV(monthlyData, dateRangeStart, dateRangeEnd) {
+      const months = monthlyData.map(m => m.month);
+
+      // CSV rows
+      const rows = [
+        ['Metric', ...months, 'Total'],
+        ['Number of Directors', ...monthlyData.map(m => m.directors), monthlyData.reduce((sum, m) => sum + m.directors, 0)],
+        ['Number of Managers', ...monthlyData.map(m => m.managers), monthlyData.reduce((sum, m) => sum + m.managers, 0)],
+        ['Number of Generalists', ...monthlyData.map(m => m.generalists), monthlyData.reduce((sum, m) => sum + m.generalists, 0)],
+        ['Total Miles Flown', ...monthlyData.map(m => Math.round(m.totalMilesFly)), monthlyData.reduce((sum, m) => sum + m.totalMilesFly, 0)],
+        ['Total Miles if Driven', ...monthlyData.map(m => Math.round(m.totalMilesDrive)), monthlyData.reduce((sum, m) => sum + m.totalMilesDrive, 0)],
+        ['Total Cost of Driving', ...monthlyData.map(m => Math.round(m.totalCostDrive)), monthlyData.reduce((sum, m) => sum + m.totalCostDrive, 0)],
+        ['Total Cost of Flying', ...monthlyData.map(m => Math.round(m.totalCostFly)), monthlyData.reduce((sum, m) => sum + m.totalCostFly, 0)],
+        ['Savings (Driving - Flying)', ...monthlyData.map(m => Math.round(m.totalCostDrive - m.totalCostFly)), monthlyData.reduce((sum, m) => sum + (m.totalCostDrive - m.totalCostFly), 0)]
+      ];
+
+      return rows.map(row => row.join(',')).join('\n');
+    }
+
+  </script>
   <script>
     let reportData = null;
     let directorsList = null;
@@ -92,7 +501,7 @@
 
       const months = data.map(m => m.month);
       let html = '<table class="results-table"><thead><tr><th>Metric</th>';
-      
+
       for (const month of months) {
         html += `<th>${month}</th>`;
       }
@@ -141,11 +550,11 @@
     function displayErrors(errors) {
       const errorContainer = document.createElement('div');
       errorContainer.className = 'report-errors';
-      
+
       const errorTitle = document.createElement('h3');
       errorTitle.className = 'report-errors__title';
       errorTitle.textContent = `⚠️ ${errors.length} Flight(s) Skipped`;
-      
+
       const errorList = document.createElement('ul');
       errorList.className = 'report-errors__list';
       for (const error of errors) {
@@ -154,7 +563,7 @@
         li.textContent = error;
         errorList.appendChild(li);
       }
-      
+
       errorContainer.appendChild(errorTitle);
       errorContainer.appendChild(errorList);
       resultsContainer.appendChild(errorContainer);
@@ -171,7 +580,7 @@
 
       const detailsSection = document.createElement('div');
       detailsSection.className = 'report-details';
-      
+
       const title = document.createElement('h2');
       title.className = 'report-details__title';
       title.textContent = 'Detailed Flight Breakdown';
@@ -201,7 +610,7 @@
         const aircraftType = window.CostCalculator.detectAircraftType(flight.tail) === 'kingAir' ? 'King Air' : 'Kodiak';
         const directors = flight.classified.directors.join('\n') || '—';
         const managers = flight.classified.managers.join('\n') || '—';
-        
+
         html += '<tr>' +
           `<td>${flight.dateStr}</td>` +
           `<td>${aircraftType}</td>` +
@@ -218,7 +627,7 @@
       }
 
       html += '</tbody></table>';
-      
+
       const table = document.createElement('div');
       table.innerHTML = html;
       table.className = 'report-details__table';
@@ -258,19 +667,19 @@
       // Read and process file
       const file = csvFileInput.files[0];
       const reader = new FileReader();
-      
+
       reader.onload = async (e) => {
         try {
           processBtn.disabled = true;
           showStatus('Processing flight log...', 'info');
 
           const csvText = e.target.result;
-          
+
           // Parse and clean flight log
-          const cleanedFlights = window.FlightParser.cleanFlightLog(csvText);
+          const cleanedFlights = cleanFlightLog(csvText);
           const skippedNoPassengers = cleanedFlights.stats?.skippedNoPassengers || 0;
           const skippedNavaids = cleanedFlights.stats?.skippedNavaids || 0;
-          
+
           if (cleanedFlights.length === 0) {
             showStatus('No valid flights found in the uploaded file', 'error');
             processBtn.disabled = false;
@@ -293,19 +702,19 @@
           }
 
           // Process all flights
-          const processResult = await window.FlightReports.processAllFlights(
+          const processResult = await processAllFlights(
             filteredFlights,
             directorsList
           );
-          
+
           const processedFlights = processResult.flights;
           const errors = processResult.errors || [];
 
           // Aggregate by month
-          const monthlyData = window.FlightReports.aggregateByMonth(processedFlights);
+          const monthlyData = aggregateByMonth(processedFlights);
 
           // Generate CSV
-          const csv = window.FlightReports.generateReportCSV(
+          const csv = generateReportCSV(
             monthlyData,
             startDateInput.value || 'all',
             endDateInput.value || 'all'
@@ -324,7 +733,7 @@
           renderDetailedFlights(processedFlights);
           resultsSection.classList.remove('is-hidden');
           downloadBtn.disabled = false;
-          
+
           let successMsg = `Report generated successfully from ${processedFlights.length} flights`;
           if (errors.length > 0) {
             successMsg += ` (${errors.length} flights skipped due to errors)`;
@@ -333,7 +742,7 @@
             successMsg += ` — Skipped ${skippedNoPassengers} with no passengers, ${skippedNavaids} Navaids flights`;
           }
           showStatus(successMsg, 'success');
-          
+
           // Display errors if any
           if (errors.length > 0) {
             displayErrors(errors);
@@ -361,7 +770,7 @@
 
       const { csv, startDate, endDate } = reportData;
       const filename = `flight-report_${startDate}_${endDate}.csv`;
-      
+
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
