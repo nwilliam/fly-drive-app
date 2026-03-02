@@ -1,0 +1,32 @@
+name: Push content to storage account
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  TEST_CONTAINER: pvc-4f616eec-0822-4328-934f-0e8db1e31b31/html
+  TEST_ACCOUNT_NAME: t79takssst01
+  PROD_CONTAINER:
+  PROD_ACCOUNT_NAME:
+
+jobs:
+  copyTestContent:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') == false }}
+    name: Copy Test Content
+    environment: test
+    runs-on:
+      group: self-hosted-test-aks
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Azure CLI script
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az storage blob sync -c ${{ env.TEST_CONTAINER }} --account-name ${{ env.TEST_ACCOUNT_NAME }} --sas-token "${{ secrets.TEST_SAS_TOKEN }}" -s . --exclude-path ".*" --exclude-pattern ".*;CNAME"
