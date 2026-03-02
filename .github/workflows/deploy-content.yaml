@@ -29,11 +29,14 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
+            # Decode the base64 SAS token so GitHub does not mask it
+            SAS=$(echo "${{ secrets.TEST_SAS_TOKEN_B64 }}" | base64 -d)
+
             az storage blob sync \
               --account-name ${{ env.TEST_ACCOUNT_NAME }} \
               --container ${{ env.TEST_CONTAINER }} \
               --destination html \
-              --sas-token '${{ secrets.TEST_SAS_TOKEN }}' \
+              --sas-token "$SAS" \
               --source . \
               --exclude-path ".*" \
               --exclude-pattern ".*;CNAME"
