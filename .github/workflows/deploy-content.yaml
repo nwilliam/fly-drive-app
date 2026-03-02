@@ -31,7 +31,8 @@ jobs:
           inlineScript: |
             az storage blob sync \
               --account-name ${{ env.TEST_ACCOUNT_NAME }} \
-              --container-name ${{ env.TEST_CONTAINER }} \
+              --container ${{ env.TEST_CONTAINER }} \
+              --destination html \
               --sas-token "${{ secrets.TEST_SAS_TOKEN }}" \
               --auth-mode key \
               --source . \
