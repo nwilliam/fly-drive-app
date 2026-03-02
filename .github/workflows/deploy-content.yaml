@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  TEST_CONTAINER: pvc-4f616eec-0822-4328-934f-0e8db1e31b31/html
+  TEST_CONTAINER: pvc-4f616eec-0822-4328-934f-0e8db1e31b31
   TEST_ACCOUNT_NAME: t79takssst01
   PROD_CONTAINER:
   PROD_ACCOUNT_NAME:
