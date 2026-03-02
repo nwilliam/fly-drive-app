@@ -34,7 +34,6 @@ jobs:
               --container ${{ env.TEST_CONTAINER }} \
               --destination html \
               --sas-token "${{ secrets.TEST_SAS_TOKEN }}" \
-              --auth-mode key \
               --source . \
               --exclude-path ".*" \
               --exclude-pattern ".*;CNAME"
