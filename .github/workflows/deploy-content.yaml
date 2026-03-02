@@ -29,4 +29,4 @@ jobs:
           azcopy sync "." \
             "https://${{ env.TEST_ACCOUNT_NAME }}.blob.core.windows.net/${{ env.TEST_CONTAINER }}/html?${{ secrets.TEST_SAS_TOKEN }}" \
             --delete-destination=true \
-            --exclude-pattern "**/.*;CNAME"
+            --exclude-pattern "{**/.*,CNAME}"
