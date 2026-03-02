@@ -13,9 +13,9 @@ env:
   PROD_ACCOUNT_NAME:
 
 jobs:
-  copyDevContent:
+  copyTestContent:
     if: ${{ startsWith(github.ref, 'refs/tags/v') == false }}
-    name: Copy Dev Content
+    name: Copy Test Content
     environment: test
     runs-on:
       group: self-hosted-test-aks
