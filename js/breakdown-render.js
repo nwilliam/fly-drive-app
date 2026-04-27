@@ -58,6 +58,13 @@ const renderBreakdownTable = (dom, data, trip, inputs) => {
     <td>$${data.driveDistanceCost.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
   </tr>
   <tr>
+    <td>Total Time Away
+      ${tooltip(`Total time away from the office includes both travel time and hours spent at the destination. This is important to consider because it impacts lodging needs.`)}
+    </td>
+    <td>${data.driveHours.toFixed(2)} hours traveling + ${data.hoursAtDestination} hours at destination</td>
+    <td>${data.totalTimeAwayDrive.toFixed(2)} hrs</td>
+  </tr>
+  <tr>
     <td>Lodging
         ${tooltip(`Lodging cost is calculated using total trip hours with ${HOURS_ALLOWED_PER_DAY} hours/day allowed before requiring an overnight stay.\n\nOvernight accommodations are calculated at $${ACCOMMODATIONS_PER_PERSON} per person per night.`)}</td>
     <td>${data.totalEmployees} employees x $${ACCOMMODATIONS_PER_PERSON} per night x ${data.numDays} nights</td>
@@ -98,6 +105,13 @@ const renderBreakdownTable = (dom, data, trip, inputs) => {
     </td>
     <td>${trip.flyMiles.toFixed(1)} miles x $${COST_PER_MILE.flyingKingAir}/mile</td>
     <td>$${data.flyDistanceCostKingAir.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+  </tr>
+  <tr>
+    <td>Total Time Away
+      ${tooltip(`Total time away from the office includes both travel time and hours spent at the destination. This is important to consider because it impacts lodging needs.`)}
+    </td>
+    <td>${data.flyHoursKingAir.toFixed(2)} hours traveling + ${data.hoursAtDestination} hours at destination</td>
+    <td>${data.totalTimeAwayKingAir.toFixed(2)} hrs</td>
   </tr>
   <tr>
     <td>Lodging
@@ -141,6 +155,13 @@ const renderBreakdownTable = (dom, data, trip, inputs) => {
     </td>
     <td>${trip.flyMiles.toFixed(1)} miles x $${COST_PER_MILE.flyingKodiak}/mile</td>
     <td>$${data.flyDistanceCostKodiak.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+  </tr>
+  <tr>
+    <td>Total Time Away
+      ${tooltip(`Total time away from the office includes both travel time and hours spent at the destination. This is important to consider because it impacts lodging needs.`)}
+    </td>
+    <td>${data.flyHoursKodiak.toFixed(2)} hours traveling + ${data.hoursAtDestination} hours at destination</td>
+    <td>${data.totalTimeAwayKodiak.toFixed(2)} hrs</td>
   </tr>
   <tr>
     <td>Lodging

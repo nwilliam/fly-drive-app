@@ -33,12 +33,6 @@
 <main>
   <section>
     <h2>Trip Information</h2>
-    <div class="trip-options" id="trip-options">
-      <label class="trip-toggle" for="round-trip-toggle">
-        <input checked id="round-trip-toggle" type="checkbox">
-        Round trip
-      </label>
-    </div>
     <div class="city-pairs" id="city-pairs"></div>
     <div class="pair-actions">
       <button class="add-pair-btn" id="add-city-pair" type="button">
@@ -60,7 +54,15 @@
           </div>
 
           <div class="city-pair-field field-span destination-field autocomplete-container">
-            <label>Destination</label>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0; flex-wrap: wrap;">
+              <label for="dest1" >Destination Airport</label>
+              <div style="display: flex; align-items: center; white-space: nowrap; font-size: 0.7rem; margin-left: auto; gap: 0.25rem;">
+                <label class="trip-toggle" for="round-trip-toggle">
+                  <input type="checkbox" id="roundTripCheckbox" checked>
+                  <label for="roundTripCheckbox" style="font-size: small;">Round Trip</label>
+                </label>
+              </div>
+            </div>
             <div class="autocomplete-field">
               <input autocomplete="off" class="dest-input" placeholder="Enter ICAO, FAA code, or airport name" type="text">
               <div class="autocomplete-list" hidden></div>
@@ -69,6 +71,9 @@
             <div class="field-error dest-error" hidden aria-live="polite"></div>
           </div>
 
+          <!--
+          Arrival/Departure picker UI intentionally disabled for parity with main branch.
+          Kept here for future reuse.
           <div class="datetime-group">
             <div class="city-pair-field datetime-picker">
               <label>Arrival</label>
@@ -136,6 +141,13 @@
                 </div>
               </div>
             </div>
+          </div>
+          -->
+
+          <div class="city-pair-field field-span">
+            <label>Hours at Destination</label>
+            <input class="hours-at-destination-input" min="0" step="1" type="number">
+            <div class="field-error hours-at-destination-error" hidden aria-live="polite"></div>
           </div>
         </div>
       </div>

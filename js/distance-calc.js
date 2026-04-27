@@ -15,7 +15,7 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// Get airport data from airports.js (assumes AIRPORTS global exists)
+// Get airport data from airports.js 
 function getAirportByCode(code) {
   if (!window.AIRPORTS) {
     throw new Error("AIRPORTS data not loaded. Ensure airports.js is included.");
@@ -45,18 +45,18 @@ function getDrivingDistance(originCode, destCode) {
   // If origin is STP, use destination's drivingFromKSTP
   if (originNormalized === "KSTP" || originNormalized === "STP") {
     const dest = getAirportByCode(destCode);
-    return dest.drivingFromKSTP || haversine(dest.lat, dest.lon, 44.8849, -93.2224) * 1.2;
+    return dest.drivingFromKSTP || haversine(dest.lat, dest.lon, 44.8849, -93.2224) * window.HAVERSINE_DRIVE_MULTIPLIER;
   }
   
   // If destination is STP, use origin's drivingFromKSTP
   if (destNormalized === "KSTP" || destNormalized === "STP") {
     const origin = getAirportByCode(originCode);
-    return origin.drivingFromKSTP || haversine(origin.lat, origin.lon, 44.8849, -93.2224) * 1.2;
+    return origin.drivingFromKSTP || haversine(origin.lat, origin.lon, 44.8849, -93.2224) * window.HAVERSINE_DRIVE_MULTIPLIER;
   }
   
   // Non-STP leg: use haversine × 1.2
   const flyDist = getFlyingDistance(originCode, destCode);
-  return flyDist * 1.2;
+  return flyDist * window.HAVERSINE_DRIVE_MULTIPLIER;
 }
 
 // Export functions

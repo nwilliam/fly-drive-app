@@ -70,6 +70,7 @@ const DRIVING_SPEED_MPH = 55;
 const HOURS_ALLOWED_PER_DAY = 10;
 const HOURS_ALLOWED_PER_DAY_FLYING = 12;
 const GENERALIST_PERCENTAGE = 0.05; // 5% of total personnel allocated as generalists
+const HAVERSINE_DRIVE_MULTIPLIER = 1.2; // Multiplier for driving distance when not using STP-based distances
 //const ROUND_TRIP = true; // can be used to multiply distances/times
 
 const INVALID_PASSENGERS = [
@@ -163,3 +164,4 @@ window.GENERALIST_PERCENTAGE = GENERALIST_PERCENTAGE;
 window.INVALID_PASSENGERS = INVALID_PASSENGERS;
 window.NAVAIDS_PASSENGERS = NAVAIDS_PASSENGERS;
 window.DIRECTORS_DATA = DIRECTORS_DATA;
+window.HAVERSINE_DRIVE_MULTIPLIER = HAVERSINE_DRIVE_MULTIPLIER;

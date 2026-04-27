@@ -7,7 +7,7 @@
   const HOME_AIRPORT = (window.AIRPORTS || []).find(a => a.icao === "KSTP" || a.faa === "STP")
     || (window.AIRPORTS ? window.AIRPORTS[0] : null);
   const MAX_PAIRS = 6;
-  let roundTrip = dom.roundTripToggle ? dom.roundTripToggle.checked : true;
+  let roundTrip = true;
 
   const formatAirport = (airport) => {
     if (!airport) return "";
@@ -68,11 +68,19 @@
 
   const updatePairControls = () => {
     const hasMultiple = cityPairs.length > 1;
+    const showRoundTripToggle = cityPairs.length === 1;
     dom.cityPairs.classList.toggle("has-multiple", hasMultiple);
     if (dom.tripOptions) {
       dom.tripOptions.classList.toggle("is-hidden", hasMultiple);
     }
     cityPairs.forEach((pair, index) => {
+      if (pair.roundTripToggle) {
+        pair.roundTripToggle.hidden = !showRoundTripToggle || index > 0;
+      }
+      if (pair.roundTripInput) {
+        pair.roundTripInput.checked = roundTrip;
+        pair.roundTripInput.disabled = !showRoundTripToggle || index > 0;
+      }
       pair.card.classList.toggle("pair-secondary", index > 0);
       pair.card.classList.toggle("city-pair-card--flat", cityPairs.length === 1);
       if (index === 0) {
@@ -90,6 +98,13 @@
         pair.destInput.value = formatAirport(HOME_AIRPORT);
         pair.destInput.disabled = true;
         pair.destInput.hidden = true;
+        if (pair.hoursAtDestinationInput) {
+          pair.hoursAtDestinationInput.value = "0";
+          pair.hoursAtDestinationInput.disabled = true;
+        }
+        if (pair.hoursAtDestinationError) {
+          window.setFieldError(pair.hoursAtDestinationInput, pair.hoursAtDestinationError, "");
+        }
         if (pair.destinationStatic) {
           pair.destinationStatic.hidden = false;
           pair.destinationStatic.textContent = formatAirport(HOME_AIRPORT);
@@ -98,6 +113,9 @@
       } else {
         pair.destInput.disabled = false;
         pair.destInput.hidden = false;
+        if (pair.hoursAtDestinationInput) {
+          pair.hoursAtDestinationInput.disabled = false;
+        }
         if (pair.destinationStatic) {
           pair.destinationStatic.hidden = true;
           pair.destinationStatic.textContent = "";
@@ -117,9 +135,16 @@
     const destList = fragment.querySelector(".autocomplete-list");
     const destError = fragment.querySelector(".dest-error");
     const destinationStatic = fragment.querySelector(".destination-static");
-    const pickerNodes = Array.from(fragment.querySelectorAll(".datetime-picker"));
-    const arrivalPicker = pickerNodes[0];
-    const departurePicker = pickerNodes[1];
+    const roundTripToggle = fragment.querySelector(".trip-toggle");
+    const roundTripInput = fragment.querySelector(".trip-toggle input[type='checkbox']");
+    const hoursAtDestinationInput = fragment.querySelector(".hours-at-destination-input");
+    const hoursAtDestinationError = fragment.querySelector(".hours-at-destination-error");
+
+    // Arrival/Departure picker references intentionally disconnected for now,
+    // but left commented for future restoration.
+    // const pickerNodes = Array.from(fragment.querySelectorAll(".datetime-picker"));
+    // const arrivalPicker = pickerNodes[0];
+    // const departurePicker = pickerNodes[1];
 
     const pair = {
       card,
@@ -128,12 +153,34 @@
       destList,
       destError,
       destinationStatic,
-      arrivalValue: arrivalPicker ? arrivalPicker.querySelector(".datetime-value") : null,
-      departureValue: departurePicker ? departurePicker.querySelector(".datetime-value") : null,
-      departureDisplay: departurePicker ? departurePicker.querySelector(".datetime-input") : null,
-      departureError: departurePicker ? departurePicker.querySelector(".departure-error") : null,
+      roundTripToggle,
+      roundTripInput,
+      hoursAtDestinationInput,
+      hoursAtDestinationError,
+      // Arrival/Departure values preserved for future reuse.
+      // arrivalValue: arrivalPicker ? arrivalPicker.querySelector(".datetime-value") : null,
+      // departureValue: departurePicker ? departurePicker.querySelector(".datetime-value") : null,
+      // departureDisplay: departurePicker ? departurePicker.querySelector(".datetime-input") : null,
+      // departureError: departurePicker ? departurePicker.querySelector(".departure-error") : null,
       destination: null
     };
+
+    if (roundTripInput) {
+      roundTripInput.checked = roundTrip;
+      roundTripInput.addEventListener("change", () => {
+        if (cityPairs[0] !== pair) {
+          roundTripInput.checked = roundTrip;
+          return;
+        }
+        roundTrip = roundTripInput.checked;
+        updateResultsHeading();
+        scheduleRecalc();
+      });
+    }
+
+    if (hoursAtDestinationInput) {
+      hoursAtDestinationInput.addEventListener("input", scheduleRecalc);
+    }
 
     originField.textContent = formatAirport(HOME_AIRPORT);
 
@@ -167,7 +214,8 @@
     } else {
       dom.cityPairs.appendChild(fragment);
     }
-    window.initDateTimePickers(scheduleRecalc, pair.card);
+    // Arrival/Departure picker initialization intentionally disabled for now.
+    // window.initDateTimePickers(scheduleRecalc, pair.card);
   };
 
   const addCityPair = () => {
@@ -242,20 +290,32 @@
 
     window.setFieldError(pair.destInput, pair.destError, "");
 
-    let hoursAtDest = 0;
-    const hours = getHoursBetween(pair.arrivalValue?.value, pair.departureValue?.value);
-    if (hours == null) {
-      if (pair.arrivalValue?.value || pair.departureValue?.value) {
-        window.setFieldError(pair.departureDisplay, pair.departureError, "Select both arrival and departure.");
-      } else {
-        window.setFieldError(pair.departureValue, pair.departureError, "");
-      }
-    } else if (hours < 0) {
-      window.setFieldError(pair.departureDisplay, pair.departureError, "Departure must be after arrival.");
-    } else {
-      window.setFieldError(pair.departureDisplay, pair.departureError, "");
-      hoursAtDest = hours;
+    let hoursAtDest = parseFloat(pair.hoursAtDestinationInput?.value ?? "0");
+    if (!Number.isFinite(hoursAtDest) || hoursAtDest < 0) {
+      window.setFieldError(
+        pair.hoursAtDestinationInput,
+        pair.hoursAtDestinationError,
+        "Enter a valid non-negative number of hours."
+      );
+      return null;
     }
+    window.setFieldError(pair.hoursAtDestinationInput, pair.hoursAtDestinationError, "");
+
+    // Arrival/Departure hours calculation intentionally disabled for now,
+    // but preserved here for future restoration.
+    // const hours = getHoursBetween(pair.arrivalValue?.value, pair.departureValue?.value);
+    // if (hours == null) {
+    //   if (pair.arrivalValue?.value || pair.departureValue?.value) {
+    //     window.setFieldError(pair.departureDisplay, pair.departureError, "Select both arrival and departure.");
+    //   } else {
+    //     window.setFieldError(pair.departureValue, pair.departureError, "");
+    //   }
+    // } else if (hours < 0) {
+    //   window.setFieldError(pair.departureDisplay, pair.departureError, "Departure must be after arrival.");
+    // } else {
+    //   window.setFieldError(pair.departureDisplay, pair.departureError, "");
+    //   hoursAtDest = hours;
+    // }
 
     const multiplier = getTripMultiplier(totalPairs);
     const driveMilesOneWay = getDriveMiles(originAirport, pair.destination);
@@ -322,62 +382,78 @@
       });
       acc.driveMiles += trip.driveMiles;
       acc.flyMiles += trip.flyMiles;
+      acc.hoursAtDest += trip.hoursAtDest;
       acc.driveHours += result.driveHours;
       acc.driveDistanceCost += result.driveDistanceCost;
-      acc.numDays += result.numDays;
-      acc.driveLodging += result.driveLodging;
       acc.driveEmployeeTotal += result.driveEmployeeTotal;
-      acc.driveTotal += result.driveTotal;
       acc.flyHoursKingAir += result.flyHoursKingAir;
       acc.flyDistanceCostKingAir += result.flyDistanceCostKingAir;
-      acc.flyNumDaysKingAir += result.flyNumDaysKingAir;
-      acc.flyLodgingKingAir += result.flyLodgingKingAir;
-      acc.flyTotalKingAir += result.flyTotalKingAir;
       acc.flyHoursKodiak += result.flyHoursKodiak;
       acc.flyDistanceCostKodiak += result.flyDistanceCostKodiak;
-      acc.flyNumDaysKodiak += result.flyNumDaysKodiak;
-      acc.flyLodgingKodiak += result.flyLodgingKodiak;
-      acc.flyTotalKodiak += result.flyTotalKodiak;
       return acc;
     }, {
       driveMiles: 0,
       flyMiles: 0,
+      hoursAtDest: 0,
       driveHours: 0,
       driveDistanceCost: 0,
-      numDays: 0,
-      driveLodging: 0,
       driveEmployeeTotal: 0,
-      driveTotal: 0,
       flyHoursKingAir: 0,
       flyDistanceCostKingAir: 0,
+      flyHoursKodiak: 0,
+      flyDistanceCostKodiak: 0,
       flyNumDaysKingAir: 0,
       flyLodgingKingAir: 0,
       flyTotalKingAir: 0,
-      flyHoursKodiak: 0,
-      flyDistanceCostKodiak: 0,
       flyNumDaysKodiak: 0,
       flyLodgingKodiak: 0,
-      flyTotalKodiak: 0
+      flyTotalKodiak: 0,
+      numDays: 0,
+      driveLodging: 0,
+      driveTotal: 0
     });
+
+    const driveNumDays = Math.floor((tripTotals.driveHours + tripTotals.hoursAtDest) / window.HOURS_ALLOWED_PER_DAY);
+    const driveLodging = totals.totalEmployees * window.ACCOMMODATIONS_PER_PERSON * driveNumDays;
+    const driveTotal = tripTotals.driveEmployeeTotal + tripTotals.driveDistanceCost + driveLodging;
+    const totalTimeAwayDrive = tripTotals.driveHours + tripTotals.hoursAtDest;
+
+    const flyNumDaysKingAir = Math.floor(
+      (tripTotals.flyHoursKingAir + tripTotals.hoursAtDest) / window.HOURS_ALLOWED_PER_DAY_FLYING
+    );
+    const flyLodgingKingAir = (totals.totalEmployees + 2) * window.ACCOMMODATIONS_PER_PERSON * flyNumDaysKingAir;
+    const flyTotalKingAir = tripTotals.flyDistanceCostKingAir + flyLodgingKingAir;
+    const totalTimeAwayKingAir = tripTotals.flyHoursKingAir + tripTotals.hoursAtDest;
+
+    const flyNumDaysKodiak = Math.floor(
+      (tripTotals.flyHoursKodiak + tripTotals.hoursAtDest) / window.HOURS_ALLOWED_PER_DAY_FLYING
+    );
+    const flyLodgingKodiak = (totals.totalEmployees + 2) * window.ACCOMMODATIONS_PER_PERSON * flyNumDaysKodiak;
+    const flyTotalKodiak = tripTotals.flyDistanceCostKodiak + flyLodgingKodiak;
+    const totalTimeAwayKodiak = tripTotals.flyHoursKodiak + tripTotals.hoursAtDest;
 
     const summary = {
       ...totals,
+      hoursAtDestination: tripTotals.hoursAtDest,
       driveHours: tripTotals.driveHours,
+      totalTimeAwayDrive,
       driveDistanceCost: tripTotals.driveDistanceCost,
-      numDays: tripTotals.numDays,
-      driveLodging: tripTotals.driveLodging,
+      numDays: driveNumDays,
+      driveLodging,
       driveEmployeeTotal: tripTotals.driveEmployeeTotal,
-      driveTotal: tripTotals.driveTotal,
+      driveTotal,
       flyHoursKingAir: tripTotals.flyHoursKingAir,
+      totalTimeAwayKingAir,
       flyDistanceCostKingAir: tripTotals.flyDistanceCostKingAir,
-      flyNumDaysKingAir: tripTotals.flyNumDaysKingAir,
-      flyLodgingKingAir: tripTotals.flyLodgingKingAir,
-      flyTotalKingAir: tripTotals.flyTotalKingAir,
+      flyNumDaysKingAir,
+      flyLodgingKingAir,
+      flyTotalKingAir,
       flyHoursKodiak: tripTotals.flyHoursKodiak,
+      totalTimeAwayKodiak,
       flyDistanceCostKodiak: tripTotals.flyDistanceCostKodiak,
-      flyNumDaysKodiak: tripTotals.flyNumDaysKodiak,
-      flyLodgingKodiak: tripTotals.flyLodgingKodiak,
-      flyTotalKodiak: tripTotals.flyTotalKodiak
+      flyNumDaysKodiak,
+      flyLodgingKodiak,
+      flyTotalKodiak
     };
 
     window.renderTotals(dom, summary);
@@ -391,13 +467,6 @@
   dom.directorsInput.addEventListener("input", scheduleRecalc);
   dom.managersInput.addEventListener("input", scheduleRecalc);
   dom.generalistsInput.addEventListener("input", scheduleRecalc);
-  if (dom.roundTripToggle) {
-    dom.roundTripToggle.addEventListener("change", () => {
-      roundTrip = dom.roundTripToggle.checked;
-      updateResultsHeading();
-      scheduleRecalc();
-    });
-  }
   dom.addCityPairButton.addEventListener("click", () => {
     addCityPair();
     scheduleRecalc();
