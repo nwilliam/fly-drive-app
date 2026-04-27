@@ -1,0 +1,60 @@
+name: Push content to storage account
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  TEST_CONTAINER: pvc-4f616eec-0822-4328-934f-0e8db1e31b31
+  TEST_ACCOUNT_NAME: t79takssst01
+  PROD_CONTAINER: pvc-0d896095-18e1-4ac6-abe8-ab824d4188d2
+  PROD_ACCOUNT_NAME: t79pakssst01
+
+jobs:
+  copyTestContent:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') == false }}
+    name: Copy Test Content
+    environment: test
+    runs-on:
+      group: self-hosted-test-aks
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Prepare clean deploy folder
+        run: |
+          mkdir -p /tmp/deploy
+          # Copy all files/folders except hidden ones and CNAME
+          rsync -av --exclude='.*' --exclude='CNAME' ./ /tmp/deploy/
+          
+      - name: Sync test content with AzCopy
+        run: |
+          azcopy sync "/tmp/deploy" \
+            "https://${{ env.TEST_ACCOUNT_NAME }}.blob.core.windows.net/${{ env.TEST_CONTAINER }}/html?${{ secrets.TEST_SAS_TOKEN }}" \
+            --delete-destination=true
+
+  copyProdContent:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') == true }}
+    name: Copy Prod Content
+    environment: production
+    runs-on:
+      group: self-hosted-prod-aks
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Prepare clean deploy folder
+        run: |
+          mkdir -p /tmp/deploy
+          # Copy all files/folders except hidden ones and CNAME
+          rsync -av --exclude='.*' --exclude='CNAME' ./ /tmp/deploy/
+          
+      - name: Sync prod content with AzCopy
+        run: |
+          azcopy sync "/tmp/deploy" \
+            "https://${{ env.PROD_ACCOUNT_NAME }}.blob.core.windows.net/${{ env.PROD_CONTAINER }}/html?${{ secrets.PROD_SAS_TOKEN }}" \
+            --delete-destination=true
