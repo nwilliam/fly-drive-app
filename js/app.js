@@ -201,6 +201,7 @@
       onClear: () => {
         pair.destination = null;
         updatePairControls();
+        scheduleRecalc();
       },
       onInput: () => scheduleRecalc()
     });
@@ -290,7 +291,8 @@
 
     window.setFieldError(pair.destInput, pair.destError, "");
 
-    let hoursAtDest = parseFloat(pair.hoursAtDestinationInput?.value ?? "0");
+    const rawHoursAtDest = pair.hoursAtDestinationInput?.value?.trim() ?? "";
+    let hoursAtDest = rawHoursAtDest === "" ? 0 : parseFloat(rawHoursAtDest);
     if (!Number.isFinite(hoursAtDest) || hoursAtDest < 0) {
       window.setFieldError(
         pair.hoursAtDestinationInput,

@@ -32,6 +32,7 @@ function getAirportByCode(code) {
 function getFlyingDistance(originCode, destCode) {
   const origin = getAirportByCode(originCode);
   const dest = getAirportByCode(destCode);
+  console.log(`Calculating flying distance from ${originCode} to ${destCode} using haversine formula. Haversine distance: ${haversine(origin.lat, origin.lon, dest.lat, dest.lon).toFixed(2)} miles.`);
   return haversine(origin.lat, origin.lon, dest.lat, dest.lon);
 }
 
