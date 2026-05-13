@@ -67,6 +67,42 @@ function escString(s) {
   return String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').trim();
 }
 
+function toDisplayCity(city) {
+  return String(city ?? "")
+    .toLowerCase()
+    .replace(/\b\w+/g, (word) => word.charAt(0).toUpperCase() + word.slice(1));
+}
+
+function normalizeText(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function shouldAppendCity(name, city) {
+  const normalizedName = normalizeText(name);
+  const normalizedCity = normalizeText(city);
+  if (!normalizedCity || !normalizedName) return false;
+  if (normalizedName.includes(normalizedCity)) return false;
+  if (/[(/]/.test(name)) return false;
+
+  const descriptiveNamePattern =
+    /\b(field|regional|county|intl|international|airport|airpark|airfield|air center|air centre|harbor|lakes|flying|airlake|meml|memorial|legion|downtown|union)\b/i;
+  const eponymPattern = /\b[A-Z]\b/;
+
+  return descriptiveNamePattern.test(name) || eponymPattern.test(name);
+}
+
+function formatAirportName(name, city) {
+  const displayCity = toDisplayCity(city);
+  if (!shouldAppendCity(name, displayCity)) {
+    return name;
+  }
+
+  return `${name} (${displayCity})`;
+}
+
 /**
  * Detect delimiter from the header line.
  * - FAA files are often tab-delimited; sometimes comma.
@@ -113,6 +149,7 @@ function loadEligibleAirportsFromFaa(filePath) {
     if (useCode !== "PU") continue; // only public-use
 
     const name = String(r.ARPT_NAME ?? "").trim();
+    const city = String(r.CITY ?? "").trim();
     const faa = String(r.ARPT_ID ?? "").trim();
     const icao = String(r.ICAO_ID ?? "").trim();
 
@@ -124,7 +161,7 @@ function loadEligibleAirportsFromFaa(filePath) {
     if (nm > MAX_RADIUS_NM) continue;
 
     out.push({
-      name,
+      name: formatAirportName(name, city),
       icao,
       faa,
       lat,
