@@ -1,7 +1,7 @@
 const ROLES = {
   directors: {
     shortLabel: "Directors",
-    fullLabel: "Office Directors / Principle Engineers",
+    fullLabel: "Office Directors / Principal Engineers",
     hourlyRate: 86.53,
     prcFactor: 3.8,
     baseAvgYearly: "120,000"
